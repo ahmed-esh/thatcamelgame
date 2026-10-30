@@ -1,0 +1,20 @@
+[gd_resource type="Terrain3DAssets" load_steps=4 format=3]
+
+[sub_resource type="Image" id="Image_sand"]
+data = {
+"data": PackedByteArray(204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255),
+"format": "RGBA8",
+"height": 4,
+"mipmaps": true,
+"width": 4
+}
+
+[sub_resource type="ImageTexture" id="Texture_sand"]
+image = SubResource("Image_sand")
+
+[sub_resource type="Terrain3DTextureAsset" id="Sand"]
+name = "Golden Sand"
+albedo_texture = SubResource("Texture_sand")
+
+[resource]
+texture_list = Array[Terrain3DTextureAsset]([SubResource("Sand")])
