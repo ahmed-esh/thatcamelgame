@@ -43,6 +43,7 @@ _subresources={
 "materials": {
 "material_0": {
 "use_external/enabled": false,
+"use_external/fallback_path": "",
 "use_external/path": "uid://nbbdrx8vma80"
 }
 }
