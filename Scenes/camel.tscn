@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://buut7sjdvw8k4"]
+
+[ext_resource type="Script" uid="uid://bo0uprwp8rb7h" path="res://Scenes/camel.gd" id="1_adbki"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_d0u6y"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_g4v7s"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_g4v7s"]
+
+[node name="Camel" type="CharacterBody3D" unique_id=1906417165]
+script = ExtResource("1_adbki")
+max_speed = 10.0
+acceleration = 1000.0
+deceleration = 10.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1137309970]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
+shape = SubResource("CapsuleShape3D_d0u6y")
+
+[node name="Visual" type="MeshInstance3D" parent="." unique_id=1656675242]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
+mesh = SubResource("CapsuleMesh_g4v7s")
+
+[node name="Left" type="MeshInstance3D" parent="." unique_id=1216245834]
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, 1.18846, 0, 0)
+mesh = SubResource("BoxMesh_g4v7s")
+
+[node name="Right" type="MeshInstance3D" parent="." unique_id=1444552868]
+transform = Transform3D(0.2, 0, 0, 0, 0.2, 0, 0, 0, 0.2, -1.2257477, 0, 0)
+mesh = SubResource("BoxMesh_g4v7s")
+
+[node name="SpringAnchor" type="Node3D" parent="." unique_id=725278601]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+
+[node name="SpringArm3D" type="SpringArm3D" parent="SpringAnchor" unique_id=16315516]
+spring_length = 5.0
+
+[node name="CameraTarget" type="Node3D" parent="SpringAnchor/SpringArm3D" unique_id=1412904353]

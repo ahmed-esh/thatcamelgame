@@ -1,22 +1,26 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene format=3 uid="uid://bs5ipelt2eaku"]
 
-[ext_resource type="Script" path="res://Scripts/desert_world.gd" id="1"]
-[ext_resource type="Script" path="res://Scripts/sand_terrain.gd" id="2"]
-[ext_resource type="Terrain3DMaterial" path="res://Terrain/sand_material.tres" id="3"]
-[ext_resource type="Terrain3DAssets" path="res://Terrain/sand_assets.tres" id="4"]
+[ext_resource type="Script" uid="uid://bu3c6bl7mlkwe" path="res://Scripts/desert_world.gd" id="1"]
+[ext_resource type="Script" uid="uid://d3kjoykp01fwm" path="res://Scripts/sand_terrain.gd" id="2"]
+[ext_resource type="Terrain3DMaterial" uid="uid://dxhwxaq0qny4g" path="res://Terrain/sand_material.tres" id="3"]
+[ext_resource type="Terrain3DAssets" uid="uid://ccqh8235nmrs2" path="res://Terrain/sand_assets.tres" id="4"]
 [ext_resource type="PackedScene" path="res://Scenes/desert_scenery.tscn" id="5"]
 
-[node name="Desert" type="Node3D"]
+[node name="Desert" type="Node3D" unique_id=1888767619]
 script = ExtResource("1")
 
-[node name="Sand" type="Terrain3D" parent="."]
+[node name="Sand" type="Terrain3D" parent="." unique_id=1643667791]
 data_directory = "res://Terrain"
 material = ExtResource("3")
 assets = ExtResource("4")
-vertex_spacing = 0.25
-mesh_size = 64
 mesh_lods = 8
+mesh_size = 64
+vertex_spacing = 0.25
 cull_margin = 80.0
+top_level = true
 script = ExtResource("2")
+metadata/_edit_lock_ = true
 
-[node name="Scenery" parent="." instance=ExtResource("5")]
+[node name="Scenery" parent="." unique_id=952378921 instance=ExtResource("5")]
+
+[editable path="Scenery"]

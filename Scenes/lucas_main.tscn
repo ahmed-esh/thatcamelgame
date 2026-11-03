@@ -1,0 +1,44 @@
+[gd_scene format=3 uid="uid://y13dtjirhk18"]
+
+[ext_resource type="Script" uid="uid://c58ighmcfcmt" path="res://Scenes/GameManager.gd" id="1_1y6h0"]
+[ext_resource type="Terrain3DMaterial" uid="uid://dxhwxaq0qny4g" path="res://Terrain/sand_material.tres" id="2_kp7ma"]
+[ext_resource type="Terrain3DAssets" uid="uid://ccqh8235nmrs2" path="res://Terrain/sand_assets.tres" id="3_1y6h0"]
+[ext_resource type="PackedScene" uid="uid://4n4rb57osprp" path="res://Scenes/player.tscn" id="4_dagur"]
+[ext_resource type="PackedScene" path="res://Scenes/desert_scenery.tscn" id="5_g43y2"]
+[ext_resource type="PackedScene" uid="uid://buut7sjdvw8k4" path="res://Scenes/camel.tscn" id="5_n4ejx"]
+[ext_resource type="Script" uid="uid://1cmg5lrfnoxy" path="res://Scenes/camera_lerp.gd" id="6_kp7ma"]
+
+[node name="Main" type="Node3D" unique_id=1888767619]
+script = ExtResource("1_1y6h0")
+
+[node name="Sand" type="Terrain3D" parent="." unique_id=1643667791]
+data_directory = "res://Terrain"
+material = ExtResource("2_kp7ma")
+assets = ExtResource("3_1y6h0")
+mesh_lods = 8
+mesh_size = 64
+vertex_spacing = 0.25
+cull_margin = 80.0
+top_level = true
+metadata/_edit_lock_ = true
+
+[node name="Scenery" parent="." unique_id=952378921 instance=ExtResource("5_g43y2")]
+
+[node name="Player" parent="." unique_id=1589457889 instance=ExtResource("4_dagur")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.51072264, 13.725327, -0.65300894)
+max_speed = 4.5
+acceleration = 8.0
+deceleration = 15.0
+is_active = true
+tilt_limit = 89.0
+
+[node name="Camel" parent="." unique_id=1906417165 instance=ExtResource("5_n4ejx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6590557, 2.1669884, 1.4645386)
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1712021232]
+script = ExtResource("6_kp7ma")
+follow_speed = 1000.0
+arrive_distance = 0.1
+arrive_angle = 0.1
+
+[editable path="Scenery"]
