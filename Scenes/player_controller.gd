@@ -5,23 +5,29 @@ extends CharacterBody3D
 @export var acceleration : float
 @export var deceleration : float
 @export var is_active : bool
-var mouse_sensitivity : float = 1
-@export var tilt_limit : float = 75
+@export var rotation_speed : float
+@export var tilt_limit : float = 75 
 
+
+
+var mouse_sensitivity : float = 1
 var desiredVelocity : Vector3
 var can_get_on_camel : bool
+var _prev_dir : Vector3
+
 
 @onready var camera_target: Node3D = $CameraPivot/SpringArm3D/CameraTarget
-
 @onready var _camera_pivot = $CameraPivot
 @onready var area_3d: Area3D = $Area3D
+@onready var animation_tree: AnimationTree = $AnimationTree
+@onready var visuals : Node3D = $man
 
 
 
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	
+	animation_tree.advance_expression_base_node = self.get_path()
 	# Setting cam. 
 	Global.player = self
 	Global.player_camera_node = camera_target
@@ -101,3 +107,14 @@ func _physics_process(delta: float) -> void:
 		velocity.z = move_toward(velocity.z, 0, deceleration * delta)
 	
 	move_and_slide()
+	
+	if (direction.length() > 0.2):
+		_prev_dir = direction
+	
+	# manage visuals.
+	var target_angle := Vector3.BACK.signed_angle_to(_prev_dir, Vector3.UP) # this means the difference in 
+	visuals.global_rotation.y = lerp_angle(visuals.rotation.y, target_angle, rotation_speed * delta)
+	
+	
+	
+	

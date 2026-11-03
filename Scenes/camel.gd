@@ -5,8 +5,12 @@ extends CharacterBody3D
 @export var acceleration : float
 @export var deceleration : float
 @export var is_active : bool
-var mouse_sensitivity : float = 1
 @export var tilt_limit : float = 75
+@export var visual : Node3D
+
+
+
+var mouse_sensitivity : float = 1
 
 var desiredVelocity : Vector3
 const JUMP_VELOCITY = 4.5
@@ -40,7 +44,6 @@ func _unhandled_input(event: InputEvent) -> void:
 	if (event.is_action_pressed("Mount")):
 			GET_OFF_CAMEL()
 			return
-	
 	
 	# Mouselook implemented using `screen_relative` for resolution-independent sensitivity.
 	if event is InputEventMouseMotion:

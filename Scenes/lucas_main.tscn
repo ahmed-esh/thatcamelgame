@@ -30,7 +30,8 @@ max_speed = 4.5
 acceleration = 8.0
 deceleration = 15.0
 is_active = true
-tilt_limit = 89.0
+rotation_speed = 2.0
+tilt_limit = 0.0
 
 [node name="Camel" parent="." unique_id=1906417165 instance=ExtResource("5_n4ejx")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6590557, 2.1669884, 1.4645386)

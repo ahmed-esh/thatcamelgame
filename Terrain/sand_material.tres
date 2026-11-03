@@ -1,8 +1,19 @@
-[gd_resource type="Terrain3DMaterial" load_steps=2 format=3]
+[gd_resource type="Terrain3DMaterial" format=3 uid="uid://dxhwxaq0qny4g"]
 
-[ext_resource type="Shader" path="res://Shaders/sand.gdshader" id="1"]
+[ext_resource type="Shader" uid="uid://kbadovid722k" path="res://Shaders/sand.gdshader" id="1"]
 
 [resource]
+_shader_parameters = {
+&"disturbance_map": null,
+&"flat_color_remap_bottom": null,
+&"flat_color_remap_top": null,
+&"flat_terrain_normals": null,
+&"slope_color_remap_bottom": null,
+&"slope_color_remap_top": null,
+&"slope_edge_1": null,
+&"slope_edge_2": null,
+&"slope_edge_3": null
+}
 world_background = 0
 shader_override_enabled = true
 shader_override = ExtResource("1")

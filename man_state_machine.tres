@@ -1,0 +1,30 @@
+[gd_resource type="AnimationNodeStateMachine" format=3 uid="uid://c81dpulpeb1li"]
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_h87t2"]
+animation = &"man_idle"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_aegiu"]
+animation = &"man_walk"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_nyeag"]
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_jyvys"]
+xfade_time = 0.2
+advance_mode = 2
+advance_expression = "velocity.length() > 0.3"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_k7cqq"]
+xfade_time = 0.2
+advance_mode = 2
+advance_expression = "velocity.length() < 0.3"
+
+[resource]
+states/End/position = Vector2(778, 71.333336)
+states/Start/position = Vector2(199.33333, 100)
+states/man_idle/node = SubResource("AnimationNodeAnimation_h87t2")
+states/man_idle/position = Vector2(465.66666, 99.88889)
+states/man_walk/node = SubResource("AnimationNodeAnimation_aegiu")
+states/man_walk/position = Vector2(657.6666, 101.14815)
+transitions = ["Start", "man_idle", SubResource("AnimationNodeStateMachineTransition_nyeag"), "man_idle", "man_walk", SubResource("AnimationNodeStateMachineTransition_jyvys"), "man_walk", "man_idle", SubResource("AnimationNodeStateMachineTransition_k7cqq")]
+graph_offset = Vector2(109, -71)
