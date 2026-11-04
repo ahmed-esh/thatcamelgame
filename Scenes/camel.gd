@@ -4,6 +4,11 @@ extends CharacterBody3D
 @export var max_speed : float
 @export var acceleration : float
 @export var deceleration : float
+
+@export var turn_accel : float
+@export var start_turn_speed : float
+@export var max_turn_speed : float
+
 @export var is_active : bool
 @export var tilt_limit : float = 75
 @export var visuals : Node3D
@@ -25,6 +30,8 @@ var camera
 var _prev_dir : Vector3 = Vector3(1,0,0)
 var state_machine : AnimationNodeStateMachinePlayback
 var is_transitioning : bool = false
+var is_accelerating : bool = false
+var current_turn_speed : float
 
 
 func _ready() -> void:
@@ -34,7 +41,6 @@ func _ready() -> void:
 	Global.camel_camera_node  = camera_target
 	mouse_sensitivity = Global.mouse_sens
 	state_machine = animation_tree["parameters/playback"]
-	
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
@@ -65,11 +71,9 @@ func _physics_process(delta: float) -> void:
 	if (!is_active && !is_transitioning):
 		$VisualContainer/camel_man/man_root.visible = false
 	if (!is_active && is_transitioning):
-		
 		$VisualContainer/camel_man/man_root.visible = true
 		pass
-	
-		
+
 	if (!is_active): 
 		return
 
@@ -80,6 +84,13 @@ func _physics_process(delta: float) -> void:
 	#if Input.is_action_just_pressed("ui_accept") and is_on_floor():
 		#velocity.y = JUMP_VELOCITY
 	var input_dir := Input.get_vector("Left", "Right", "Up", "Down")
+	if (input_dir.y != 0): is_accelerating = true
+	else: is_accelerating = false
+	var turn_dir = input_dir.x
+	
+	
+	
+	
 	
 	var cam_basis: Basis = get_viewport().get_camera_3d().global_basis
 	var forward := -cam_basis.z
@@ -96,7 +107,7 @@ func _physics_process(delta: float) -> void:
 	
 	if direction:
 		velocity.x = move_toward(velocity.x, max_speed * direction.x, acceleration * delta)
-		velocity.z = move_toward(velocity.z, max_speed * direction.z, acceleration * delta)
+		#velocity.z = move_toward(velocity.z, max_speed * direction.z, acceleration * delta)
 		
 		## check if the direction is completely 180
 		if (direction.dot(velocity) < 0): 
@@ -104,7 +115,7 @@ func _physics_process(delta: float) -> void:
 			velocity.z = 0
 	else:
 		velocity.x = move_toward(velocity.x, 0, deceleration * delta)
-		velocity.z = move_toward(velocity.z, 0, deceleration * delta)
+		#velocity.z = move_toward(velocity.z, 0, deceleration * delta)
 	
 	move_and_slide()
 	
