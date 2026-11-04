@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bu3c6bl7mlkwe" path="res://Scripts/desert_world.gd" id="1"]
 [ext_resource type="Script" uid="uid://d3kjoykp01fwm" path="res://Scripts/sand_terrain.gd" id="2"]
 [ext_resource type="Terrain3DMaterial" uid="uid://dxhwxaq0qny4g" path="res://Terrain/sand_material.tres" id="3"]
-[ext_resource type="Terrain3DAssets" uid="uid://ccqh8235nmrs2" path="res://Terrain/sand_assets.tres" id="4"]
+[ext_resource type="Terrain3DAssets" uid="uid://vd2vve61q8kg" path="res://Terrain/sand_assets.tres" id="4"]
 [ext_resource type="PackedScene" path="res://Scenes/desert_scenery.tscn" id="5"]
 
 [node name="Desert" type="Node3D" unique_id=1888767619]
