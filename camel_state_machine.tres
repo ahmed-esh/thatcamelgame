@@ -1,0 +1,54 @@
+[gd_resource type="AnimationNodeStateMachine" format=3 uid="uid://c6er42lkqopjd"]
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_crk4r"]
+animation = &"camel_idle"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_4cl1y"]
+animation = &"mount_left"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_3fbma"]
+animation = &"mount_right"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_5bwew"]
+animation = &"ride_idle"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_knium"]
+animation = &"ride_walk"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_crk4r"]
+xfade_time = 0.3
+advance_mode = 2
+advance_expression = "velocity.length() > 0.3"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_4cl1y"]
+xfade_time = 0.3
+advance_mode = 2
+advance_expression = "velocity.length() < 0.3"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_5bwew"]
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_knium"]
+xfade_time = 0.3
+switch_mode = 2
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_auhft"]
+xfade_time = 0.3
+switch_mode = 2
+advance_mode = 2
+
+[resource]
+states/Start/position = Vector2(153.99998, 120.60081)
+states/camel_idle/node = SubResource("AnimationNodeAnimation_crk4r")
+states/camel_idle/position = Vector2(580.44446, -51.4513)
+states/mount_left/node = SubResource("AnimationNodeAnimation_4cl1y")
+states/mount_left/position = Vector2(187.66667, -118.333336)
+states/mount_right/node = SubResource("AnimationNodeAnimation_3fbma")
+states/mount_right/position = Vector2(374.33334, -119.44445)
+states/ride_idle/node = SubResource("AnimationNodeAnimation_5bwew")
+states/ride_idle/position = Vector2(373.33334, 122.123436)
+states/ride_walk/node = SubResource("AnimationNodeAnimation_knium")
+states/ride_walk/position = Vector2(753.99994, 118.716034)
+transitions = ["ride_idle", "ride_walk", SubResource("AnimationNodeStateMachineTransition_crk4r"), "ride_walk", "ride_idle", SubResource("AnimationNodeStateMachineTransition_4cl1y"), "Start", "ride_idle", SubResource("AnimationNodeStateMachineTransition_5bwew"), "mount_left", "ride_idle", SubResource("AnimationNodeStateMachineTransition_knium"), "mount_right", "ride_idle", SubResource("AnimationNodeStateMachineTransition_auhft")]
+graph_offset = Vector2(-132, -87)

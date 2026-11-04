@@ -6,7 +6,8 @@ extends CharacterBody3D
 @export var deceleration : float
 @export var is_active : bool
 @export var rotation_speed : float
-@export var tilt_limit : float = 75 
+@export var tilt_limit_lower : float = 20
+@export var tilt_limit_higher : float = 70
 
 
 
@@ -62,13 +63,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 		# what is if nothign is detected, idk die. 
 	
-	
-	
 	# Mouselook implemented using `screen_relative` for resolution-independent sensitivity.
 	if event is InputEventMouseMotion:
 		_camera_pivot.rotation.x -= event.screen_relative.y * mouse_sensitivity
+		
 		# Prevent the camera from rotating too far up or down.
-		_camera_pivot.rotation.x = clampf(_camera_pivot.rotation.x, -tilt_limit, tilt_limit)
+		var radians = _camera_pivot.rotation.x 
+		_camera_pivot.rotation.x = deg_to_rad(clamp(rad_to_deg(radians), -tilt_limit_higher, tilt_limit_lower))
 		_camera_pivot.rotation.y += -event.screen_relative.x * mouse_sensitivity
 
 func _physics_process(delta: float) -> void:
@@ -81,7 +82,6 @@ func _physics_process(delta: float) -> void:
 	#if Input.is_action_just_pressed("ui_accept") and is_on_floor():
 		#velocity.y = JUMP_VELOCITY
 	var input_dir := Input.get_vector("Left", "Right", "Up", "Down")
-	
 	var cam_basis: Basis = get_viewport().get_camera_3d().global_basis
 	var forward := -cam_basis.z
 	forward.y = 0
@@ -114,7 +114,3 @@ func _physics_process(delta: float) -> void:
 	# manage visuals.
 	var target_angle := Vector3.BACK.signed_angle_to(_prev_dir, Vector3.UP) # this means the difference in 
 	visuals.global_rotation.y = lerp_angle(visuals.rotation.y, target_angle, rotation_speed * delta)
-	
-	
-	
-	

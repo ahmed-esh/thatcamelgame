@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://c58ighmcfcmt" path="res://Scenes/GameManager.gd" id="1_1y6h0"]
 [ext_resource type="Terrain3DMaterial" uid="uid://dxhwxaq0qny4g" path="res://Terrain/sand_material.tres" id="2_kp7ma"]
-[ext_resource type="Terrain3DAssets" uid="uid://ccqh8235nmrs2" path="res://Terrain/sand_assets.tres" id="3_1y6h0"]
+[ext_resource type="Terrain3DAssets" uid="uid://vd2vve61q8kg" path="res://Terrain/sand_assets.tres" id="3_1y6h0"]
 [ext_resource type="PackedScene" uid="uid://4n4rb57osprp" path="res://Scenes/player.tscn" id="4_dagur"]
 [ext_resource type="PackedScene" path="res://Scenes/desert_scenery.tscn" id="5_g43y2"]
 [ext_resource type="PackedScene" uid="uid://buut7sjdvw8k4" path="res://Scenes/camel.tscn" id="5_n4ejx"]
@@ -25,13 +25,13 @@ metadata/_edit_lock_ = true
 [node name="Scenery" parent="." unique_id=952378921 instance=ExtResource("5_g43y2")]
 
 [node name="Player" parent="." unique_id=1589457889 instance=ExtResource("4_dagur")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.51072264, 13.725327, -0.65300894)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.2884157, 3.1948366, 0.5404358)
 max_speed = 4.5
 acceleration = 8.0
 deceleration = 15.0
 is_active = true
 rotation_speed = 2.0
-tilt_limit = 0.0
+tilt_limit_higher = 89.0
 
 [node name="Camel" parent="." unique_id=1906417165 instance=ExtResource("5_n4ejx")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.6590557, 2.1669884, 1.4645386)
