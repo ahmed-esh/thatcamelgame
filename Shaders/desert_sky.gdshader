@@ -6,7 +6,7 @@ float hash(vec2 p) {
 
 void sky() {
     float elevation = max(EYEDIR.y, 0.0);
-    vec3 sky_color = mix(vec3(0.095, 0.075, 0.19), vec3(0.008, 0.014, 0.055), pow(smoothstep(0.0, 0.75, elevation), 0.55));
+    vec3 sky_color = mix(vec3(0.065, 0.085, 0.17), vec3(0.03137, 0.04706, 0.12941), pow(smoothstep(0.0, 0.75, elevation), 0.55));
     vec2 celestial = vec2(atan(EYEDIR.x, -EYEDIR.z), asin(clamp(EYEDIR.y, -1.0, 1.0)));
     vec2 star_grid = celestial * 155.0;
     vec2 cell = floor(star_grid);
@@ -26,6 +26,6 @@ void sky() {
     float crescent = moon_disc * smoothstep(0.041, 0.043, eclipse_distance);
     float halo = exp(-moon_distance * 18.0) * 0.19;
     sky_color += vec3(0.28, 0.50, 0.72) * halo;
-    sky_color = mix(sky_color, vec3(0.76, 0.94, 1.0), crescent);
+    sky_color = mix(sky_color, vec3(0.76, 0.90, 1.0), crescent);
     COLOR = sky_color;
 }

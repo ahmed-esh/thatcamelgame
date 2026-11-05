@@ -1,0 +1,11 @@
+{
+	"device": "AMD Radeon Pro 555X",
+	"engine": "4.7.2-stable (official)",
+	"max_frame_ms": 161.177,
+	"mean_frame_ms": 29.7891166666667,
+	"measured_frames": 120,
+	"moving_footsteps": 40,
+	"p95_frame_ms": 69.725,
+	"renderer": "forward_plus",
+	"resolution": "1440x900"
+}

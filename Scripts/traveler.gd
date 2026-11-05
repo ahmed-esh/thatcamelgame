@@ -1,7 +1,9 @@
 class_name DesertTraveler
 extends CharacterBody3D
 
-var sand: SandTerrain
+@export var world_half_extent := 246.0
+@export var uphill_climbing := false
+var sand: Node3D
 var visual := Node3D.new()
 var camera := Camera3D.new()
 var yaw := 0.0
@@ -18,6 +20,8 @@ var slide_clock := 0.0
 var slide_spray: GPUParticles3D
 var slide_sparks: GPUParticles3D
 var airborne_time := 0.0
+var step_sink := 0.0
+var gait_phase := 0.0
 
 func _ready() -> void:
     name = "Traveler"
@@ -130,12 +134,19 @@ func _physics_process(delta: float) -> void:
     var stick := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
     var heading := Vector3(stick.x, 0.0, stick.y).rotated(Vector3.UP, yaw)
     var speed := 7.8 if Input.is_action_pressed("run") else 4.2
-    var downhill := sand.downhill_at(global_position)
+    var downhill: Vector3 = sand.downhill_at(global_position)
     var slope := downhill.length()
     var on_sand := absf(global_position.y - sand.height_at(global_position)) < 0.8
+    var climbing := uphill_climbing and on_sand and heading.dot(downhill) < -0.05 and slope < tan(floor_max_angle)
+    if climbing:
+        speed *= clampf(1.0 - slope * 0.65, 0.42, 1.0)
+        sliding = false
+        slide_velocity = Vector3.ZERO
     if is_on_floor():
         airborne_time = 0.0
-        if on_sand and slope > (0.17 if sliding else 0.28):
+        if on_sand and not climbing and slope > (0.17 if sliding else 0.28):
+            if not sliding:
+                slide_velocity = Vector3(velocity.x, 0.0, velocity.z)
             sliding = true
         elif slope < 0.17 or not on_sand:
             sliding = false
@@ -145,9 +156,9 @@ func _physics_process(delta: float) -> void:
             sliding = false
     if sliding:
         slide_velocity += downhill * 22.0 * delta
-        slide_velocity = slide_velocity.move_toward(Vector3.ZERO, delta * 0.9)
+        slide_velocity = slide_velocity.move_toward(Vector3.ZERO, delta * (1.2 + slide_velocity.length() * 0.12))
         slide_velocity = slide_velocity.limit_length(13.5)
-        var desired := slide_velocity + heading * 1.7
+        var desired := slide_velocity + heading * 2.5
         velocity.x = move_toward(velocity.x, desired.x, delta * 11.0)
         velocity.z = move_toward(velocity.z, desired.z, delta * 11.0)
     else:
@@ -163,8 +174,8 @@ func _physics_process(delta: float) -> void:
     else:
         velocity.y -= 19.0 * delta
     move_and_slide()
-    global_position.x = clampf(global_position.x, -246.0, 246.0)
-    global_position.z = clampf(global_position.z, -246.0, 246.0)
+    global_position.x = clampf(global_position.x, -world_half_extent, world_half_extent)
+    global_position.z = clampf(global_position.z, -world_half_extent, world_half_extent)
     if global_position.y < -40.0:
         global_position = spawn_point
         velocity = Vector3.ZERO
@@ -174,7 +185,11 @@ func _physics_process(delta: float) -> void:
         visual.rotation.y = lerp_angle(visual.rotation.y, atan2(-facing.x, -facing.z), 1.0 - exp(-delta * 10.0))
     visual.rotation.x = lerpf(visual.rotation.x, -0.24 if sliding else 0.0, 1.0 - exp(-delta * 8.0))
     cloth_material.set_shader_parameter("motion", horizontal_speed / 8.0)
-    visual.position.y = sin(stride * TAU / 1.45) * 0.035 if is_on_floor() else 0.06
+    gait_phase += horizontal_speed * delta * 5.5
+    step_sink = move_toward(step_sink, 0.0, delta * 0.18)
+    var sink := -0.055 - step_sink if is_on_floor() and on_sand else 0.0
+    var bob := sin(gait_phase) * 0.022 * minf(horizontal_speed / 4.2, 1.0) if is_on_floor() else 0.06
+    visual.position.y = lerpf(visual.position.y, sink + bob - (0.09 if sliding else 0.0), 1.0 - exp(-delta * 12.0))
     slide_spray.emitting = sliding and is_on_floor() and horizontal_speed > 1.2
     slide_sparks.emitting = slide_spray.emitting
     if slide_spray.emitting:
@@ -182,20 +197,23 @@ func _physics_process(delta: float) -> void:
         powder.direction = Vector3(velocity.x, 1.7, velocity.z).normalized()
         powder.initial_velocity_min = horizontal_speed * 0.22
         powder.initial_velocity_max = horizontal_speed * 0.42 + 1.0
-        visual.position.y -= 0.15
     slide_clock += delta
-    if sliding and is_on_floor() and slide_clock >= 0.1:
+    if sliding and is_on_floor() and slide_clock >= 0.1 and sand.has_method("drag_sand"):
         slide_clock = 0.0
-        sand.drag_sand(global_position, downhill, horizontal_speed / 7.0)
+        if on_sand:
+            sand.stamp(global_position, Vector2(0.48, 0.65), 0.12, -visual.rotation.y)
+            sand.drag_sand(global_position, downhill, horizontal_speed / 7.0)
     if is_on_floor():
-        if not grounded_last:
+        if not grounded_last and on_sand and sand.has_method("stamp"):
             sand.stamp(global_position, Vector2(0.6, 0.65), 0.16)
         stride += horizontal_speed * delta
         if stride >= 0.9 and not sliding:
             stride = fmod(stride, 0.9)
             foot_side *= -1.0
             var foot := global_position + Vector3(foot_side * 0.21, 0.0, -0.08).rotated(Vector3.UP, visual.rotation.y)
-            sand.stamp(foot, Vector2(0.25, 0.43), 0.15, -visual.rotation.y)
+            if on_sand and sand.has_method("stamp"):
+                sand.stamp(foot, Vector2(0.40, 0.58), lerpf(0.14, 0.22, clampf(horizontal_speed / 7.8, 0.0, 1.0)), -visual.rotation.y)
+                step_sink = 0.04 + horizontal_speed * 0.004
     grounded_last = is_on_floor()
     for i in get_slide_collision_count():
         var contact := get_slide_collision(i)
@@ -215,11 +233,29 @@ func update_camera(delta: float, instant: bool = false) -> void:
     if not hit.is_empty():
         desired = hit.position + hit.normal * 0.35
     camera.global_position = desired if instant else camera.global_position.lerp(desired, 1.0 - exp(-delta * 8.0))
+    camera.fov = lerpf(camera.fov, 58.0 + clampf(Vector2(velocity.x, velocity.z).length() - 5.0, 0.0, 8.0) * 0.5, 1.0 - exp(-delta * 2.0))
     camera.look_at(focus + Vector3(0.0, 1.2, 0.0), Vector3.UP)
 
 func build_slide_effects() -> void:
-    slide_spray = create_slide_particles(150, 1.25, false)
-    slide_sparks = create_slide_particles(55, 1.8, true)
+    slide_spray = create_slide_particles(72, 0.9, false)
+    slide_sparks = create_slide_particles(24, 1.4, true)
+    var wind := create_slide_particles(24, 9.0, false)
+    wind.position.y = 4.0
+    wind.emitting = true
+    wind.preprocess = 3.0
+    wind.visibility_aabb = AABB(Vector3(-65.0, -10.0, -65.0), Vector3(130.0, 30.0, 130.0))
+    var breeze: ParticleProcessMaterial = wind.process_material
+    breeze.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+    breeze.emission_box_extents = Vector3(45.0, 2.0, 45.0)
+    breeze.direction = Vector3(1.0, 0.02, 0.3)
+    breeze.spread = 12.0
+    breeze.initial_velocity_min = 0.8
+    breeze.initial_velocity_max = 1.5
+    breeze.gravity = Vector3.ZERO
+    breeze.scale_min = 3.0
+    breeze.scale_max = 6.0
+    var haze: ShaderMaterial = wind.draw_pass_1.material
+    haze.set_shader_parameter("opacity", 0.09)
     var aura := OmniLight3D.new()
     aura.position.y = 1.2
     aura.light_color = Color("5df4df")

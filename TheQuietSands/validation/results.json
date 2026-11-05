@@ -1,0 +1,10 @@
+{
+	"collision_interior_error": 0.00000476464629173279,
+	"collision_max_error": 0.0,
+	"engine": "4.7.2-stable (official)",
+	"failures": [],
+	"footsteps": 30,
+	"relief": 216.627776506887,
+	"slide_frames": 100,
+	"stamps": 69
+}
