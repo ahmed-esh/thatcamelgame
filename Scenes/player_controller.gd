@@ -4,12 +4,17 @@ extends CharacterBody3D
 @export var max_speed : float
 @export var acceleration : float
 @export var deceleration : float
-@export var is_active : bool
+@export var is_active : bool:
+	set(value):
+			if value and not is_active:
+				_target_yaw = visuals.global_rotation.y   # pick up wherever the model is now
+			is_active = value
+
 @export var rotation_speed : float
 @export var tilt_limit_lower : float = 20
 @export var tilt_limit_higher : float = 70
 
-
+var _target_yaw
 
 var mouse_sensitivity : float = 1
 var desiredVelocity : Vector3
@@ -23,15 +28,18 @@ var _prev_dir : Vector3
 @onready var animation_tree: AnimationTree = $AnimationTree
 @onready var visuals : Node3D = $man
 
+@onready var man: Node3D = $man
 
 
 func _ready() -> void:
+	_target_yaw = visuals.global_rotation.y  
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	animation_tree.advance_expression_base_node = self.get_path()
 	# Setting cam. 
 	Global.player = self
 	Global.player_camera_node = camera_target
 	mouse_sensitivity = Global.mouse_sens
+	
 	
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
@@ -104,10 +112,10 @@ func _physics_process(delta: float) -> void:
 		velocity.z = move_toward(velocity.z, 0, deceleration * delta)
 	
 	move_and_slide()
-	
+	var target_angle : float
 	if (direction.length() > 0.2):
-		_prev_dir = direction
+		_target_yaw = Vector3.BACK.signed_angle_to(direction, Vector3.UP) # this means the difference in 
 	
 	# manage visuals.
-	var target_angle := Vector3.BACK.signed_angle_to(_prev_dir, Vector3.UP) # this means the difference in 
-	visuals.global_rotation.y = lerp_angle(visuals.rotation.y, target_angle, rotation_speed * delta)
+	
+	visuals.global_rotation.y = lerp_angle(visuals.global_rotation.y, _target_yaw, rotation_speed * delta)

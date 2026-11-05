@@ -15,10 +15,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		is_game_started = true
 		on_game_start()
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
-
 func on_game_start() -> void:
 	await Global.main_camera.lerp_to_new(Global.player_camera_node)
 	Global.player.is_active = true
