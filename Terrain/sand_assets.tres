@@ -17,27 +17,8 @@ material_override = SubResource("StandardMaterial3D_6n8c7")
 last_lod = 0
 last_shadow_lod = 0
 lod0_range = 128.0
-[gd_resource type="Terrain3DAssets" format=3 uid="uid://vd2vve61q8kg"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6n8c7"]
-transparency = 4
-cull_mode = 2
-vertex_color_use_as_albedo = true
-backlight_enabled = true
-backlight = Color(0.5, 0.5, 0.5, 1)
-distance_fade_mode = 1
-distance_fade_min_distance = 128.0
-distance_fade_max_distance = 96.0
-
-[sub_resource type="Terrain3DMeshAsset" id="Terrain3DMeshAsset_b4xbi"]
-generated_type = 1
-height_offset = 0.5
-material_override = SubResource("StandardMaterial3D_6n8c7")
-last_lod = 0
-last_shadow_lod = 0
-lod0_range = 128.0
-
-[sub_resource type="Image" id="Image_7mgx7"]
+[sub_resource type="Image" id="Image_6n8c7"]
 data = {
 "data": PackedByteArray(204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255, 204, 140, 71, 255),
 "format": "RGBA8",
@@ -47,9 +28,9 @@ data = {
 }
 
 [sub_resource type="ImageTexture" id="Texture_sand"]
-image = SubResource("Image_7mgx7")
+image = SubResource("Image_6n8c7")
 
-[sub_resource type="Image" id="Image_mp3hf"]
+[sub_resource type="Image" id="Image_b4xbi"]
 data = {
 "data": PackedByteArray(255, 255, 73, 146, 36, 73, 146, 36, 95, 132, 95, 115, 170, 170, 170, 170, 255, 0, 64, 2, 36, 73, 146, 36, 255, 123, 0, 0, 80, 80, 85, 85, 255, 0, 72, 146, 36, 73, 146, 36, 255, 123, 0, 0, 84, 85, 85, 85),
 "format": "DXT5 RGBA8",
@@ -59,7 +40,7 @@ data = {
 }
 
 [sub_resource type="ImageTexture" id="ImageTexture_onkiy"]
-image = SubResource("Image_mp3hf")
+image = SubResource("Image_b4xbi")
 
 [sub_resource type="Terrain3DTextureAsset" id="Sand"]
 name = "Golden Sand"
