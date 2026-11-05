@@ -1,14 +1,21 @@
-extends Node3D
+extends "res://Scenes/GameManager.gd"
 
 const Terrain = preload("res://Scripts/QuietSands/terrain.gd")
 const Traveler = preload("res://Scripts/QuietSands/traveler.gd")
 const Forms = preload("res://Scripts/QuietSands/forms.gd")
 var terrain: Node3D
 var traveler: CharacterBody3D
+var camel: CharacterBody3D
 var environment: WorldEnvironment
 var oasis: Node3D
 var landmarks: Node3D
 var ready_to_explore := false
+
+func _physics_process(_delta: float) -> void:
+	if camel != null:
+		traveler = camel if camel.is_active or camel.is_transitioning else $Player
+		terrain.follow(traveler.global_position)
+		oasis.traveler = traveler
 
 func _process(_delta: float) -> void:
 	if environment == null:
@@ -22,15 +29,16 @@ func _ready() -> void:
 	_setup_input()
 	if has_node("SculptedDesert"):
 		terrain = $SculptedDesert
-		traveler = $Traveler
+		traveler = $Player
+		camel = $Camel
 		environment = $WorldEnvironment
 		landmarks = $Landmarks
 		oasis = $Landmarks/Oasis
-		traveler.terrain = terrain
 		oasis.terrain = terrain
 		oasis.traveler = traveler
 		terrain.follow(traveler.position)
 		ready_to_explore = true
+		super._ready()
 		return
 	_build_atmosphere()
 	terrain = Terrain.new()
