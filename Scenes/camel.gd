@@ -55,6 +55,19 @@ extends CharacterBody3D
 @onready var skeleton_3d: Skeleton3D = $VisualContainer/camel_man/man_root/Rider_Placement/Character_Rig/Skeleton3D
 @onready var leave_position: Node3D = $VisualContainer/camel_man/LeavePosition
 
+const SLIDE_STATE := &"camel_man_slide_added_camel_slide"
+const RIDE_IDLE_STATE := &"ride_idle"
+
+## Slide must be active this long (seconds) before the slide animation starts.
+@export var slide_anim_start_delay : float = 0.12
+## Slide must be inactive this long before returning to ride_idle.
+@export var slide_anim_end_grace : float = 0.15
+
+var _slide_on_time : float = 0.0
+var _slide_off_time : float = 0.0
+var _slide_anim_playing : bool = false
+
+
 var mouse_sensitivity : float = 1
 var desiredVelocity : Vector3
 
@@ -129,7 +142,6 @@ func _get_downhill() -> Vector3:
 	downhill.y = 0
 	return downhill.normalized()
 
-
 ## True if we're on a steep slope and the player is steering up it. Slides only apply to downhill
 ## or sideways movement, so walking up a steep hill is allowed.
 func _is_pushing_uphill(move_dir: Vector3) -> bool:
@@ -146,6 +158,19 @@ func _is_slide_active() -> bool:
 		return false
 	return _is_sliding or _slide_velocity.length() > 1.0
 
+func _update_slide_animation(delta: float) -> void:
+	if _is_slide_active():
+		_slide_off_time = 0.0
+		_slide_on_time += delta
+		if not _slide_anim_playing and _slide_on_time >= slide_anim_start_delay:
+			_slide_anim_playing = true
+			state_machine.start(SLIDE_STATE)
+	else:
+		_slide_on_time = 0.0
+		_slide_off_time += delta
+		if _slide_anim_playing and _slide_off_time >= slide_anim_end_grace:
+			_slide_anim_playing = false
+			state_machine.travel(RIDE_IDLE_STATE)
 
 func _update_slide(delta: float) -> void:
 	# Only slide when on a steep slope AND not pushing uphill.
@@ -248,6 +273,7 @@ func _physics_process(delta: float) -> void:
 	if (direction.length() > 0.2):
 		_prev_dir = direction
 	
+	_update_slide_animation(delta)
 	_update_visuals(delta)
 	_update_hoofprints(delta)
 

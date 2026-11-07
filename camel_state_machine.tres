@@ -3,6 +3,9 @@
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_crk4r"]
 animation = &"camel_idle"
 
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_auhft"]
+animation = &"camel_man_slide_added/camel_slide"
+
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_afd5a"]
 animation = &"dismount"
 
@@ -41,19 +44,24 @@ xfade_time = 0.3
 switch_mode = 2
 advance_mode = 2
 
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_pilrw"]
+xfade_time = 0.2
+
 [resource]
 states/Start/position = Vector2(153.99998, 120.60081)
 states/camel_idle/node = SubResource("AnimationNodeAnimation_crk4r")
 states/camel_idle/position = Vector2(535.7778, -1.4513016)
+states/camel_man_slide_added_camel_slide/node = SubResource("AnimationNodeAnimation_auhft")
+states/camel_man_slide_added_camel_slide/position = Vector2(541, -85.22223)
 states/dismount/node = SubResource("AnimationNodeAnimation_afd5a")
 states/dismount/position = Vector2(769.6667, -38)
 states/mount_left/node = SubResource("AnimationNodeAnimation_4cl1y")
-states/mount_left/position = Vector2(187.66667, -118.333336)
+states/mount_left/position = Vector2(61.66667, -85.66667)
 states/mount_right/node = SubResource("AnimationNodeAnimation_3fbma")
-states/mount_right/position = Vector2(374.33334, -119.44445)
+states/mount_right/position = Vector2(248.33334, -86.77779)
 states/ride_idle/node = SubResource("AnimationNodeAnimation_5bwew")
 states/ride_idle/position = Vector2(373.33334, 122.123436)
 states/ride_walk/node = SubResource("AnimationNodeAnimation_knium")
 states/ride_walk/position = Vector2(753.33325, 120.61361)
-transitions = ["ride_idle", "ride_walk", SubResource("AnimationNodeStateMachineTransition_crk4r"), "ride_walk", "ride_idle", SubResource("AnimationNodeStateMachineTransition_4cl1y"), "Start", "ride_idle", SubResource("AnimationNodeStateMachineTransition_5bwew"), "mount_left", "ride_idle", SubResource("AnimationNodeStateMachineTransition_knium"), "mount_right", "ride_idle", SubResource("AnimationNodeStateMachineTransition_auhft")]
-graph_offset = Vector2(-118, -159)
+transitions = ["ride_idle", "ride_walk", SubResource("AnimationNodeStateMachineTransition_crk4r"), "ride_walk", "ride_idle", SubResource("AnimationNodeStateMachineTransition_4cl1y"), "Start", "ride_idle", SubResource("AnimationNodeStateMachineTransition_5bwew"), "mount_left", "ride_idle", SubResource("AnimationNodeStateMachineTransition_knium"), "mount_right", "ride_idle", SubResource("AnimationNodeStateMachineTransition_auhft"), "camel_man_slide_added_camel_slide", "ride_idle", SubResource("AnimationNodeStateMachineTransition_pilrw")]
+graph_offset = Vector2(85, -175)
