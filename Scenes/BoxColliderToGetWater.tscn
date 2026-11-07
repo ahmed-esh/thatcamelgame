@@ -12,3 +12,4 @@ shape = SubResource("BoxShape3D_g4v7s")
 debug_color = Color(0.9490196, 0, 0.5764706, 1)
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_exited" from="." to="." method="_on_body_exited"]

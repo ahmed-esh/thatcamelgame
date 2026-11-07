@@ -10,3 +10,5 @@ var player_camera_node : Node3D
 var camel_camera_node : Node3D
 var mouse_sens : float = 0.001
 var game_started : bool
+var can_get_water : bool
+var got_water : bool

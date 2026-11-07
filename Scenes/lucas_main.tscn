@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://y13dtjirhk18"]
 
 [ext_resource type="Script" uid="uid://c58ighmcfcmt" path="res://Scenes/GameManager.gd" id="1_1y6h0"]
-[ext_resource type="PackedScene" path="res://Scenes/BoxColliderToGetWater.tscn" id="2_ge65u"]
+[ext_resource type="PackedScene" uid="uid://d01cebrlort0a" path="res://Scenes/BoxColliderToGetWater.tscn" id="2_ge65u"]
 [ext_resource type="Terrain3DMaterial" uid="uid://dxhwxaq0qny4g" path="res://Terrain/sand_material.tres" id="2_kp7ma"]
 [ext_resource type="Terrain3DAssets" uid="uid://vd2vve61q8kg" path="res://Terrain/sand_assets.tres" id="3_1y6h0"]
 [ext_resource type="PackedScene" uid="uid://4n4rb57osprp" path="res://Scenes/player.tscn" id="4_dagur"]
@@ -22,9 +22,6 @@ camera_start_location = NodePath("MainMenu/CameraStartLocation")
 
 [node name="WaterCollider" parent="." unique_id=953088357 instance=ExtResource("2_ge65u")]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, -13.244654, 0.91029644, -32.322327)
-
-[node name="CollisionShape3D" parent="WaterCollider" index="0" unique_id=1150401309]
-debug_color = Color(0.9490196, 0, 0.5764706, 1)
 
 [node name="Sand" type="Terrain3D" parent="." unique_id=1643667791]
 data_directory = "res://Terrain"
