@@ -280,7 +280,7 @@ func _physics_process(delta: float) -> void:
 
 func _update_hoofprints(delta: float) -> void:
 	var terrain := get_node_or_null("../SculptedDesert")
-	if terrain == null or not is_on_floor() or _is_sliding:
+	if terrain == null or not is_on_floor():
 		hoof_distance = 0.0
 		return
 	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
