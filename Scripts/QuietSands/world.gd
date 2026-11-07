@@ -26,6 +26,7 @@ func _process(_delta: float) -> void:
 		environment.environment.ssr_enabled = near_water
 
 func _ready() -> void:
+	super._ready()
 	_setup_input()
 	if has_node("SculptedDesert"):
 		terrain = $SculptedDesert

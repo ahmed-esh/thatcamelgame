@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://y13dtjirhk18"]
 
 [ext_resource type="Script" uid="uid://c58ighmcfcmt" path="res://Scenes/GameManager.gd" id="1_1y6h0"]
+[ext_resource type="Resource" uid="uid://cux34xo0fsp46" path="res://all.dialogue" id="2_a4gkl"]
 [ext_resource type="PackedScene" uid="uid://d01cebrlort0a" path="res://Scenes/BoxColliderToGetWater.tscn" id="2_ge65u"]
 [ext_resource type="Terrain3DMaterial" uid="uid://dxhwxaq0qny4g" path="res://Terrain/sand_material.tres" id="2_kp7ma"]
 [ext_resource type="Terrain3DAssets" uid="uid://vd2vve61q8kg" path="res://Terrain/sand_assets.tres" id="3_1y6h0"]
@@ -15,10 +16,17 @@
 _data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(0.49539173, 0), -1.0980382, 1.9817352, 0, 1, Vector2(1, 1), 0.0, 0.0, 0, 0]
 point_count = 3
 
-[node name="Main" type="Node3D" unique_id=1888767619 node_paths=PackedStringArray("main_menu", "camera_start_location")]
+[sub_resource type="LabelSettings" id="LabelSettings_a4gkl"]
+font = ExtResource("8_g43y2")
+font_size = 30
+
+[node name="Main" type="Node3D" unique_id=1888767619 node_paths=PackedStringArray("main_menu", "camera_start_location", "dialogue_label")]
 script = ExtResource("1_1y6h0")
 main_menu = NodePath("MainMenu")
 camera_start_location = NodePath("MainMenu/CameraStartLocation")
+dialogue_resource = ExtResource("2_a4gkl")
+dialogue_start = "Intro"
+dialogue_label = NodePath("Control/Label")
 
 [node name="WaterCollider" parent="." unique_id=953088357 instance=ExtResource("2_ge65u")]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, -13.244654, 0.91029644, -32.322327)
@@ -77,6 +85,26 @@ font = ExtResource("8_g43y2")
 font_size = 100
 
 [node name="CSGBox3D" type="CSGBox3D" parent="MainMenu/CameraStartLocation" unique_id=1602829591]
+
+[node name="Control" type="Control" parent="." unique_id=1343679517]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="Control" unique_id=1985727908]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 30
+text = "asddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddaaaaaaaaa asdfasd fads fasd fasdfasf asdf asd fasd fasd fasd fasdf asdf ad fad fad fa d"
+label_settings = SubResource("LabelSettings_a4gkl")
+autowrap_mode = 3
 
 [editable path="WaterCollider"]
 [editable path="Scenery"]

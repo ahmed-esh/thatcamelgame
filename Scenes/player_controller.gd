@@ -16,7 +16,6 @@ extends CharacterBody3D
 
 var _target_yaw
 
-var in_cutscene : bool = false
 var mouse_sensitivity : float = 1
 var desiredVelocity : Vector3
 var can_get_on_camel : bool
@@ -60,7 +59,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		_camera_pivot.rotation.x = deg_to_rad(clamp(rad_to_deg(radians), -tilt_limit_higher, tilt_limit_lower))
 		_camera_pivot.rotation.y += -event.screen_relative.x * mouse_sensitivity
 	
-	if in_cutscene: return
+	if Global.in_cutscene: return
 	if event.is_action_pressed("Mount"):
 		if (!Global.got_water and Global.can_get_water):
 			_get_water_event()
@@ -80,7 +79,7 @@ func _physics_process(delta: float) -> void:
 
 	# During a cutscene, input is zeroed but physics and animation still run.
 	var input_dir := Vector2.ZERO
-	if not in_cutscene:
+	if not Global.in_cutscene:
 		input_dir = Input.get_vector("Left", "Right", "Up", "Down")
 
 	var cam_basis: Basis = get_viewport().get_camera_3d().global_basis
@@ -112,7 +111,7 @@ func _physics_process(delta: float) -> void:
 	visuals.global_rotation.y = lerp_angle(visuals.global_rotation.y, _target_yaw, rotation_speed * delta)
 
 func _get_water_event() -> void:
-	in_cutscene = true
+	Global.in_cutscene = true
 	animation_tree.animation_finished.connect(_on_water_fin)
 	state_machine.start("get_water")
 
@@ -123,4 +122,4 @@ func _on_water_fin(anim_name: StringName) -> void:
 
 func _on_finish_get_water() -> void:
 	Global.got_water = true
-	in_cutscene = false
+	Global.in_cutscene = false
