@@ -1,9 +1,10 @@
 extends Node3D
 
 @export var debug_mode := true
-@export var man_offset := Vector3(-2.5, 3.0, 0.0)
-@export var women_offset := Vector3(2.5, 3.0, 0.0)
+@export var man_offset := Vector3(2.5, 3.0, 0.0)
+@export var women_offset := Vector3(-2.5, 3.0, 0.0)
 @export var mounted_height := 2.0
+@export var women_anchor: Node3D
 
 var _lines: Array[Label3D] = []
 var _texts: Dictionary = {}
@@ -135,17 +136,42 @@ func _input(event: InputEvent) -> void:
 	elif _label != null and event.keycode in [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]:
 		get_viewport().set_input_as_handled()
 		_advance()
+#
+#func _process(_delta: float) -> void:
+	#var mounted := Global.camel != null and (Global.camel.is_active or Global.camel.is_transitioning)
+	#var target: Node3D = Global.camel if mounted else Global.player
+	#var camera := get_viewport().get_camera_3d()
+	#if target == null or camera == null:
+		#return
+	#global_position = target.global_position
+	#global_basis = camera.global_basis.orthonormalized().scaled(_world_scale)
+	#for graphic: Sprite3D in [$man, $women]:
+		#var offset := man_offset if graphic == $man else women_offset
+		#if mounted:
+			#offset.y += mounted_height
+		#graphic.global_position = target.global_position + camera.global_basis.orthonormalized() * offset
+
 
 func _process(_delta: float) -> void:
 	var mounted := Global.camel != null and (Global.camel.is_active or Global.camel.is_transitioning)
 	var target: Node3D = Global.camel if mounted else Global.player
 	var camera := get_viewport().get_camera_3d()
+
 	if target == null or camera == null:
 		return
+
+	var camera_basis := camera.global_basis.orthonormalized()
+
 	global_position = target.global_position
-	global_basis = camera.global_basis.orthonormalized().scaled(_world_scale)
-	for graphic: Sprite3D in [$man, $women]:
-		var offset := man_offset if graphic == $man else women_offset
-		if mounted:
-			offset.y += mounted_height
-		graphic.global_position = target.global_position + camera.global_basis.orthonormalized() * offset
+	global_basis = camera_basis.scaled(_world_scale)
+
+	# Man follows the player or camel
+	var man_pos := man_offset
+	if mounted:
+		man_pos.y += mounted_height
+
+	$man.global_position = target.global_position + camera_basis * man_pos
+
+	# Woman follows her assigned anchor node
+	var woman_target: Node3D = women_anchor if women_anchor != null else target
+	$women.global_position = woman_target.global_position + camera_basis * women_offset
