@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://d01cebrlort0a"]
+
+[ext_resource type="Script" uid="uid://4fosohlnn4wg" path="res://Scenes/water_collider.gd" id="1_vovpr"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_g4v7s"]
+
+[node name="WaterCollider" type="Area3D" unique_id=953088357]
+script = ExtResource("1_vovpr")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1150401309]
+shape = SubResource("BoxShape3D_g4v7s")
+debug_color = Color(0.9490196, 0, 0.5764706, 1)
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

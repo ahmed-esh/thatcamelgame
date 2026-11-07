@@ -18,4 +18,5 @@ func _unhandled_input(event: InputEvent) -> void:
 func on_game_start() -> void:
 	await Global.main_camera.lerp_to_new(Global.player_camera_node)
 	Global.player.is_active = true
-	pass
+	Global.is_camel = false
+	Global.game_started = true

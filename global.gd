@@ -9,3 +9,4 @@ var camel : Camel
 var player_camera_node : Node3D
 var camel_camera_node : Node3D
 var mouse_sens : float = 0.001
+var game_started : bool
