@@ -14,6 +14,28 @@ extends CharacterBody3D
 @export var visuals : Node3D
 @export var rotation_speed : float = 12
 
+@export_group("Sliding")
+## Slope angle (degrees) above which the camel starts sliding.
+@export var slide_angle_threshold : float = 35.0
+## How strongly gravity pulls the camel down the slope while sliding.
+@export var slide_acceleration : float = 25.0
+## Maximum speed that can be reached from sliding alone.
+@export var max_slide_speed : float = 20.0
+## How fast slide momentum bleeds off once NOT on a steep slope (units/sec^2).
+## Keep this low so momentum carries over onto flat ground.
+@export var slide_momentum_decay : float = 3.0
+## Gravity is multiplied by this while sliding, which keeps the camel pressed to the slope.
+@export var slide_gravity_multiplier : float = 4.0
+## Floor snap distance while sliding. Larger = hugs bumps and dips in the terrain better.
+@export var slide_snap_length : float = 1.0
+
+@export_group("Visuals")
+## How quickly the camel's visuals lerp to match the ground normal (higher = snappier).
+@export var ground_align_speed : float = 8.0
+## How much the visuals follow the ground's tilt. 0 = always upright, 1 = fully match the
+## ground normal, above 1 = exaggerate the tilt. Lower this if bumpy terrain makes it jittery.
+@export_range(0.0, 2.0, 0.01) var ground_align_sensitivity : float = 0.5
+
 @onready var animation_tree: AnimationTree = $AnimationTree
 @onready var animation_player: AnimationPlayer = $VisualContainer/camel_man/AnimationPlayer
 
@@ -35,8 +57,16 @@ var is_transitioning : bool = false
 var is_accelerating : bool = false
 var current_turn_speed : float
 
+var _slide_velocity : Vector3 = Vector3.ZERO  # horizontal momentum from sliding
+var _is_sliding : bool = false
+var _default_snap_length : float
+var _visual_yaw : float = 0.0
+var _visual_up : Vector3 = Vector3.UP
+
 
 func _ready() -> void:
+	_default_snap_length = floor_snap_length
+	_visual_yaw = visuals.global_rotation.y
 	animation_tree.advance_expression_base_node = self.get_path()
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	Global.camel = self
@@ -58,8 +88,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	if (not is_active): return
 	
 	if (event.is_action_pressed("Mount")):
-			GET_OFF_CAMEL()
+		# Can't dismount while sliding down a slope.
+		if _is_sliding:
 			return
+		GET_OFF_CAMEL()
+		return
 	
 	# Mouselook implemented using `screen_relative` for resolution-independent sensitivity.
 	if event is InputEventMouseMotion:
@@ -67,6 +100,41 @@ func _unhandled_input(event: InputEvent) -> void:
 		# Prevent the camera from rotating too far up or down.
 		_camera_pivot.rotation.x = deg_to_rad(clamp(rad_to_deg(_camera_pivot.rotation.x), -tilt_limit, tilt_limit))
 		_camera_pivot.rotation.y += -event.screen_relative.x * mouse_sensitivity
+
+
+## Returns true if the floor we're standing on is steep enough to slide on.
+func _is_on_steep_slope() -> bool:
+	if not is_on_floor():
+		return false
+	var floor_angle := rad_to_deg(get_floor_normal().angle_to(Vector3.UP))
+	return floor_angle >= slide_angle_threshold
+
+
+## True while sliding, or while still carrying meaningful slide momentum.
+## Used to keep the camel glued to the ground instead of bouncing off slope changes.
+func _is_slide_active() -> bool:
+	return _is_sliding or _slide_velocity.length() > 1.0
+
+
+func _update_slide(delta: float) -> void:
+	_is_sliding = _is_on_steep_slope()
+
+	if _is_sliding:
+		var n := get_floor_normal()
+		# Direction of steepest descent along the surface (horizontal part).
+		var downhill := Vector3.DOWN.slide(n)
+		downhill.y = 0
+		downhill = downhill.normalized()
+
+		# Steeper slopes accelerate faster.
+		var steepness := sin(n.angle_to(Vector3.UP))
+		_slide_velocity += downhill * slide_acceleration * steepness * delta
+		_slide_velocity = _slide_velocity.limit_length(max_slide_speed)
+	elif is_on_floor():
+		# Off the steep slope but on the ground: slowly bleed off momentum.
+		# (Airborne = no friction, so momentum is preserved in the air.)
+		_slide_velocity = _slide_velocity.move_toward(Vector3.ZERO, slide_momentum_decay * delta)
+
 
 func _physics_process(delta: float) -> void:
 	# deactivate the man in the game. 
@@ -79,8 +147,11 @@ func _physics_process(delta: float) -> void:
 	if (!is_active): 
 		return
 
-	if not is_on_floor():
-		velocity += get_gravity() * delta
+	# Heavy gravity while sliding (even on the floor) keeps the camel pressed down.
+	var slide_active := _is_slide_active()
+	if not is_on_floor() or slide_active:
+		var gravity_scale := slide_gravity_multiplier if slide_active else 1.0
+		velocity += get_gravity() * gravity_scale * delta
 
 	## Handle jump.
 	#if Input.is_action_just_pressed("ui_accept") and is_on_floor():
@@ -102,6 +173,9 @@ func _physics_process(delta: float) -> void:
 	# input_dir.y is negative when pressing Up, so negate it to move along forward.
 	var direction := (right * input_dir.x + forward * -input_dir.y).normalized()
 
+	# Strip last frame's slide velocity so input logic only works on walking velocity.
+	velocity.x -= _slide_velocity.x
+	velocity.z -= _slide_velocity.z
 	
 	if direction:
 		velocity.x = move_toward(velocity.x, max_speed * direction.x, acceleration * delta)
@@ -115,14 +189,54 @@ func _physics_process(delta: float) -> void:
 		velocity.x = move_toward(velocity.x, 0, deceleration * delta)
 		velocity.z = move_toward(velocity.z, 0, deceleration * delta)
 	
+	# Update slide momentum and add it back on top of walking velocity.
+	_update_slide(delta)
+	velocity.x += _slide_velocity.x
+	velocity.z += _slide_velocity.z
+	
+	# A longer snap distance while sliding makes the body follow the terrain downward.
+	floor_snap_length = slide_snap_length if _is_slide_active() else _default_snap_length
+	
 	move_and_slide()
+
+	# If we hit a wall, the engine reduced our real velocity; clamp slide momentum
+	# to it so we don't keep phantom momentum after crashing into something.
+	var horizontal_real := Vector3(velocity.x, 0, velocity.z)
+	if _slide_velocity.length() > horizontal_real.length():
+		_slide_velocity = _slide_velocity.limit_length(horizontal_real.length())
 	
 	if (direction.length() > 0.2):
 		_prev_dir = direction
 	
-	# manage visuals.
-	var target_angle := Vector3.BACK.signed_angle_to(_prev_dir, Vector3.UP) # this means the difference in 
-	visuals.global_rotation.y = lerp_angle(visuals.rotation.y, target_angle, rotation_speed * delta)
+	_update_visuals(delta)
+
+
+## Handles facing direction (yaw) and tilting the model to the ground normal while sliding.
+func _update_visuals(delta: float) -> void:
+	# Yaw: face the movement direction.
+	var target_yaw := Vector3.BACK.signed_angle_to(_prev_dir, Vector3.UP)
+	_visual_yaw = lerp_angle(_visual_yaw, target_yaw, rotation_speed * delta)
+
+	# Tilt: "up" for the model is always the ground normal. In the air, hold the current tilt.
+	var target_up := _visual_up
+	if is_on_floor():
+		var ground_up := get_floor_normal().normalized()
+		# Scale how far we lean away from upright toward the ground normal.
+		target_up = Vector3.UP.lerp(ground_up, ground_align_sensitivity)
+		if target_up.length_squared() > 0.0001:
+			target_up = target_up.normalized()
+		else:
+			target_up = Vector3.UP
+	# Lerp + normalize (instead of Vector3.slerp) so drift can never produce a non-unit vector.
+	var new_up := _visual_up.lerp(target_up, clampf(ground_align_speed * delta, 0.0, 1.0))
+	if new_up.length_squared() > 0.0001:
+		_visual_up = new_up.normalized()
+
+	# Build the final rotation: yaw around world up first, then tilt so up -> _visual_up.
+	var yaw_q := Quaternion(Vector3.UP, _visual_yaw)
+	var tilt_q := Quaternion(Vector3.UP, _visual_up)
+	var final_basis := Basis(tilt_q * yaw_q).scaled(visuals.global_basis.get_scale())
+	visuals.global_basis = final_basis
 
 func GET_ON_CAMEL() -> void:
 	Global.player.is_active = false
