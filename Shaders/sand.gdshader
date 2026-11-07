@@ -1,168 +1,130 @@
 shader_type spatial;
-render_mode blend_mix,depth_draw_opaque,cull_back,diffuse_lambert,specular_toon,skip_vertex_transform;
-#define SKIP_PASS 0
-#define VERTEX_PASS 1
-#define FRAGMENT_PASS 2
-#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
-    #define fma(a, b, c) ((a) * (b) + (c))
-    #define dFdxCoarse(a) dFdx(a)
-    #define dFdyCoarse(a) dFdy(a)
-#endif
-uniform vec3 _camera_pos = vec3(0.f);
-uniform float _mesh_size = 48.f;
-uniform uint _background_mode = 1u;
-uniform uint _mouse_layer = 0x80000000u;
-uniform float _vertex_spacing = 1.0;
-uniform float _vertex_density = 1.0;
-uniform float _region_size = 1024.0;
-uniform float _region_texel_size = 0.0009765625;
-uniform int _region_map_size = 32;
-uniform int _region_map[1024];
-uniform highp sampler2DArray _height_maps : repeat_disable;
-uniform highp sampler2DArray _control_maps : repeat_disable;
-uniform sampler2D disturbance_map : filter_linear, repeat_disable, hint_default_black;
-uniform bool flat_terrain_normals = false;
-uniform vec3 flat_color_remap_top : source_color = vec3(0.48, 0.58, 0.72);
-uniform vec3 flat_color_remap_bottom : source_color = vec3(0.24, 0.27, 0.47);
-uniform vec3 slope_color_remap_top : source_color = vec3(0.33, 0.38, 0.62);
-uniform vec3 slope_color_remap_bottom : source_color = vec3(0.14, 0.14, 0.30);
-uniform float slope_edge_1 = 0.025;
-uniform float slope_edge_2 = 0.08;
-uniform float slope_edge_3 = 0.18;
-float grain(vec2 p) {
-    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-}
-float ripple(vec2 p) {
-    return sin(p.x * 10.0 + p.y * 3.5 + sin(p.y * 0.7) * 1.8 + sin(p.x * 0.24) * 3.0);
-}
-varying float v_vertex_xz_dist;
-varying vec3 v_vertex;
-ivec3 get_index_coord(const vec2 uv, const int search) {
-	vec2 r_uv = round(uv);
-	vec2 o_uv = mod(r_uv,_region_size);
-	ivec2 pos;
-	int bounds, layer_index = -1;
-	for (int i = -1; i < clamp(search, SKIP_PASS, FRAGMENT_PASS); i++) {
-		if ((layer_index == -1 && _background_mode == 0u ) || i < 0) {
-			r_uv -= i == -1 ? vec2(0.0) : vec2(float(o_uv.x <= o_uv.y), float(o_uv.y <= o_uv.x));
-			pos = ivec2(floor((r_uv) * _region_texel_size)) + (_region_map_size / 2);
-			bounds = int(uint(pos.x | pos.y) < uint(_region_map_size));
-			layer_index = (_region_map[ pos.y * _region_map_size + pos.x ] * bounds - 1);
-		}
-	}
-	return ivec3(ivec2(mod(r_uv,_region_size)), layer_index);
-}
-void vertex() {
-	v_vertex = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-	v_vertex_xz_dist = length(v_vertex.xz - _camera_pos.xz);
-	float scale = MODEL_MATRIX[0][0];
-	float vertex_lerp = smoothstep(0.55, 0.95, (v_vertex_xz_dist / scale - _mesh_size - 4.0) / (_mesh_size - 2.0));
-	vec2 v_fract = fract(VERTEX.xz * 0.5) * 2.0;
-	vec2 shift = (scale < _vertex_spacing + 1e-6) ?
-		mix(v_fract, vec2(v_fract.x, -v_fract.y),
-			round(fract(round(mod(v_vertex.z * _vertex_density, 4.0)) *
-			round(mod(v_vertex.x * _vertex_density, 4.0)) * 0.25))
-			) :
-		v_fract * round((fract(v_vertex.xz * 0.25 / scale) - 0.5) * 4.0);
-	vec2 start_pos = v_vertex.xz * _vertex_density;
-	vec2 end_pos = (v_vertex.xz - shift * scale) * _vertex_density;
-	v_vertex.xz -= shift * scale * vertex_lerp;
-	UV = v_vertex.xz * _vertex_density;
-	UV2 = fma(UV, vec2(_region_texel_size), vec2(0.5 * _region_texel_size));
-	ivec3 v_region = get_index_coord(start_pos, VERTEX_PASS);
-	uint control = floatBitsToUint(texelFetch(_control_maps, v_region, 0)).r;
-	bool hole = bool(control >>2u & 0x1u);
-	if ( !(CAMERA_VISIBLE_LAYERS == _mouse_layer) &&
-			(hole || (_background_mode == 0u && v_region.z < 0))) {
-		v_vertex.x = 0. / 0.;
-	} else {
-		ivec3 uv_a = get_index_coord(start_pos, VERTEX_PASS);
-		ivec3 uv_b = get_index_coord(end_pos, VERTEX_PASS);
-		float h = mix(texelFetch(_height_maps, uv_a, 0).r, texelFetch(_height_maps, uv_b, 0).r, vertex_lerp);
-		v_vertex.y = h;
-	}
-	VERTEX = (VIEW_MATRIX * vec4(v_vertex, 1.0)).xyz;
-	NORMAL = normalize((MODELVIEW_MATRIX * vec4(NORMAL, 0.0)).xyz);
-	BINORMAL = normalize((MODELVIEW_MATRIX * vec4(BINORMAL, 0.0)).xyz);
-	TANGENT = normalize((MODELVIEW_MATRIX * vec4(TANGENT, 0.0)).xyz);
-}
-void fragment() {
-	vec2 uv = UV;
-	const vec3 offsets = vec3(0, 1, 2);
-	vec2 index_id = floor(uv);
-	vec2 weight = fract(uv);
-	vec2 invert = 1.0 - weight;
-	vec4 weights = vec4(
-		invert.x * weight.y,
-		weight.x * weight.y,
-		weight.x * invert.y,
-		invert.x * invert.y
-	);
-	vec3 base_ddx = dFdxCoarse(v_vertex);
-	vec3 base_ddy = dFdyCoarse(v_vertex);
-	float region_mip = log2(max(length(base_ddx.xz), length(base_ddy.xz)) * _vertex_density);
-	bool bilerp = region_mip < 0.0;
-	ivec3 index[4];
-	index[0] = get_index_coord(index_id + offsets.xy, FRAGMENT_PASS);
-	index[1] = get_index_coord(index_id + offsets.yy, FRAGMENT_PASS);
-	index[2] = get_index_coord(index_id + offsets.yx, FRAGMENT_PASS);
-	index[3] = get_index_coord(index_id + offsets.xx, FRAGMENT_PASS);
-	vec3 index_normal[4];
-	float h[4];
-	float u = 0.0;
-	float v = 0.0;
-	h[3] = texelFetch(_height_maps, index[3], 0).r;
-	h[2] = texelFetch(_height_maps, index[2], 0).r;
-	h[0] = texelFetch(_height_maps, index[0], 0).r;
-	index_normal[3] = normalize(vec3(h[3] - h[2] + u, _vertex_spacing, h[3] - h[0] + v));
-	vec3 w_normal = index_normal[3];
-	if (bilerp) {
-		h[1] = texelFetch(_height_maps, index[1], 0).r;
-		float h_4 = texelFetch(_height_maps, get_index_coord(index_id + offsets.yz, FRAGMENT_PASS), 0).r;
-		float h_5 = texelFetch(_height_maps, get_index_coord(index_id + offsets.zy, FRAGMENT_PASS), 0).r;
-		float h_6 = texelFetch(_height_maps, get_index_coord(index_id + offsets.zx, FRAGMENT_PASS), 0).r;
-		float h_7 = texelFetch(_height_maps, get_index_coord(index_id + offsets.xz, FRAGMENT_PASS), 0).r;
-		index_normal[0] = normalize(vec3(h[0] - h[1] + u, _vertex_spacing, h[0] - h_7 + v));
-		index_normal[1] = normalize(vec3(h[1] - h_5 + u, _vertex_spacing, h[1] - h_4 + v));
-		index_normal[2] = normalize(vec3(h[2] - h_6 + u, _vertex_spacing, h[2] - h[1] + v));
-		w_normal =
-			index_normal[0] * weights[0] +
-			index_normal[1] * weights[1] +
-			index_normal[2] * weights[2] +
-			index_normal[3] * weights[3] ;
-	}
-	vec3 w_tangent = normalize(cross(w_normal, vec3(0.0, 0.0, 1.0)));
-	vec3 w_binormal = normalize(cross(w_normal, w_tangent));
-	NORMAL = mat3(VIEW_MATRIX) * w_normal;
-	TANGENT = mat3(VIEW_MATRIX) * w_tangent;
-	BINORMAL = mat3(VIEW_MATRIX) * w_binormal;
-	if (flat_terrain_normals) {
-		NORMAL = normalize(cross(dFdyCoarse(VERTEX),dFdxCoarse(VERTEX)));
-		TANGENT = normalize(cross(NORMAL, VIEW_MATRIX[2].xyz));
-		BINORMAL = normalize(cross(NORMAL, TANGENT));
-	}
-	float slope = 1.0 - clamp(w_normal.y, 0.0, 1.0);
-    float edge_1 = smoothstep(slope_edge_1 - 0.012, slope_edge_1 + 0.012, slope);
-    float edge_2 = smoothstep(slope_edge_2 - 0.014, slope_edge_2 + 0.014, slope);
-    float edge_3 = smoothstep(slope_edge_3 - 0.02, slope_edge_3 + 0.02, slope);
-    float slope_mask = edge_1 * (2.0 / 5.0) + edge_2 * (2.0 / 5.0) + edge_3 * (1.0 / 5.0);
-    vec2 p = v_vertex.xz;
-    float distance_fade = 1.0 - smoothstep(12.0, 65.0, v_vertex_xz_dist);
-    float wave = ripple(p);
-    float broad = sin(p.x * 0.017 + p.y * 0.025) * 0.5 + 0.5;
-    vec3 slope_color = mix(slope_color_remap_bottom, slope_color_remap_top, 0.62 + broad * 0.24);
-    vec3 flat_color = mix(flat_color_remap_bottom, flat_color_remap_top, 0.72 + broad * 0.22);
-    ALBEDO = mix(flat_color, slope_color, slope_mask);
-    ALBEDO *= 1.0 + wave * 0.018 * distance_fade;
-    vec3 ripple_normal = normalize(w_normal + vec3(cos(p.x * 10.0 + p.y * 3.5 + sin(p.y * 0.7) * 1.8 + sin(p.x * 0.24) * 3.0) * 0.035, 0.0, wave * 0.012) * distance_fade);
-    NORMAL = mat3(VIEW_MATRIX) * ripple_normal;
-    float sparkle = pow(grain(floor(p * 140.0)), 180.0) * pow(max(dot(normalize(CAMERA_POSITION_WORLD - v_vertex), reflect(normalize(vec3(-0.6, -0.5, -0.3)), ripple_normal)), 0.0), 12.0);
-    float disturbance = texture(disturbance_map, (p + vec2(256.0)) / 512.0).r;
-    float flow_streak = pow(0.5 + 0.5 * sin(p.x * 16.0 + p.y * 11.0 - TIME * 6.0), 5.0);
-    EMISSION = vec3(0.16, 0.75, 0.85) * disturbance * (0.16 + flow_streak * 0.22);
-    EMISSION += vec3(0.35, 0.68, 0.9) * sparkle * distance_fade * 0.5;
-    ROUGHNESS = 0.82;
-    SPECULAR = 0.25;
+render_mode specular_disabled;
+
+uniform vec3 base_sand_color : source_color = vec3(0.68,0.49,0.29);
+uniform vec3 slope_color : source_color = vec3(0.46,0.22,0.16);
+uniform vec2 ripple_direction = vec2(0.87,0.49);
+uniform float ripple_frequency : hint_range(0.1,12.0) = 5.3;
+uniform float ripple_intensity : hint_range(0.0,1.0) = 0.10;
+uniform float normal_strength : hint_range(0.0,1.0) = 0.15;
+uniform float specular_intensity : hint_range(0.0,3.0) = 0.18;
+uniform float specular_softness : hint_range(2.0,100.0) = 24.0;
+uniform float glitter_density : hint_range(0.0,1.0) = 0.06;
+uniform float glitter_brightness : hint_range(0.0,10.0) = 0.6;
+uniform float moonlight_response : hint_range(0.0,3.0) = 1.1;
+uniform float magical_emission : hint_range(0.0,1.0) = 0.05;
+uniform float disturbance_intensity : hint_range(0.0,3.0) = 0.19;
+uniform sampler2D grain_texture : filter_linear_mipmap_anisotropic, repeat_enable;
+uniform bool local_surface = false;
+uniform vec2 patch_min = vec2(-9999.0);
+uniform vec2 patch_max = vec2(-9998.0);
+uniform int layer_view : hint_range(0,6) = 0;
+
+varying vec3 world_position;
+varying vec3 world_normal;
+varying float disturbance;
+varying float compaction;
+varying vec3 facet_normal;
+varying float sparkle_mask;
+varying float detail_filter;
+varying vec3 smooth_normal_view;
+
+float hash(vec2 p) {
+	return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);
 }
 
-#include "res://Shaders/toon_light.gdshaderinc"
+float noise(vec2 p) {
+	vec2 i = floor(p);
+	vec2 f = fract(p);
+	f = f*f*(3.0-2.0*f);
+	return textureLod(grain_texture,(i+f+vec2(0.5))/256.0,0.0).b;
+}
+
+vec3 grain_sample(vec2 uv) {
+	float field = noise(world_position.xz*0.017)*7.0;
+	float a = floor(field);
+	vec2 dx = dFdx(uv);
+	vec2 dy = dFdy(uv);
+	vec3 first = textureGrad(grain_texture,uv+vec2(sin(a*2.3),cos(a*4.7)),dx,dy).rgb;
+	vec3 second = textureGrad(grain_texture,uv+vec2(sin((a+1.0)*2.3),cos((a+1.0)*4.7)),dx,dy).rgb;
+	return mix(first,second,smoothstep(0.15,0.85,fract(field)));
+}
+
+vec2 ripple(vec2 p, vec2 direction, float frequency, float bend) {
+	vec2 perpendicular = vec2(-direction.y,direction.x);
+	float across = dot(p,direction);
+	float along = dot(p,perpendicular);
+	float warp = noise(p*0.065+vec2(bend))*3.5 + sin(along*0.17+bend)*0.6;
+	float phase = (across+warp)*frequency;
+	float filtering = 1.0-smoothstep(0.7,3.0,fwidth(phase));
+	float shape = cos(phase)+0.28*cos(phase*2.0+0.7);
+	return direction * shape * filtering;
+}
+
+void vertex() {
+	world_position = (MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;
+	world_normal = normalize(MODEL_NORMAL_MATRIX*NORMAL);
+	disturbance = local_surface ? COLOR.r : 0.0;
+	compaction = local_surface ? COLOR.g : 0.0;
+}
+
+void fragment() {
+	if (!local_surface && world_position.x>patch_min.x && world_position.z>patch_min.y && world_position.x<patch_max.x && world_position.z<patch_max.y) { discard; }
+	vec3 n = normalize(world_normal);
+	smooth_normal_view = normalize((VIEW_MATRIX*vec4(n,0.0)).xyz);
+	vec3 tangent = normalize(vec3(n.y,-n.x,0.0));
+	vec3 bitangent = normalize(cross(tangent,n));
+	vec2 wind = normalize(ripple_direction);
+	vec2 crosswind = vec2(-wind.y,wind.x);
+	float facing = smoothstep(-0.35,0.35,dot(n.xz,wind));
+	float steep = 1.0-smoothstep(0.68,0.96,n.y);
+	vec2 r0 = ripple(world_position.xz,wind,ripple_frequency,0.0);
+	vec2 r1 = ripple(world_position.xz,normalize(wind+crosswind*0.55),ripple_frequency*0.79,4.0);
+	vec2 r2 = ripple(world_position.xz,normalize(wind-crosswind*0.42),ripple_frequency*0.63,9.0);
+	vec2 r3 = ripple(world_position.xz,crosswind,ripple_frequency*0.48,13.0);
+	vec2 slope_ripples = mix(mix(r0,r1,facing),mix(r2,r3,facing),steep);
+	slope_ripples *= ripple_intensity*mix(1.0,0.18,steep*facing)*(1.0-disturbance*0.7)*(1.0-compaction*0.55);
+	vec3 grains = grain_sample(world_position.xz*0.42);
+	float distance_to_camera = distance(CAMERA_POSITION_WORLD,world_position);
+	float near_detail = 1.0-smoothstep(15.0,75.0,distance_to_camera);
+	vec2 granular = (grains.rg*2.0-1.0)*normal_strength*near_detail*(1.0-compaction*0.3);
+	vec2 broad = vec2(noise(world_position.xz*0.21),noise(world_position.zx*0.18+7.0))*0.014-0.007;
+	vec2 perturb = broad;
+	if (layer_view==0 || layer_view>=2) { perturb+=granular; }
+	if (layer_view==0 || layer_view>=3) { perturb+=slope_ripples; }
+	vec3 final_normal = normalize(n+tangent*perturb.x+bitangent*perturb.y);
+	NORMAL = normalize((VIEW_MATRIX*vec4(final_normal,0.0)).xyz);
+	vec3 facet_world = normalize(n+tangent*(grains.r*2.0-1.0)*1.7+bitangent*(grains.g*2.0-1.0)*1.7);
+	facet_normal = normalize((VIEW_MATRIX*vec4(facet_world,0.0)).xyz);
+	float variance = noise(world_position.xz*0.012);
+	ALBEDO = mix(slope_color,base_sand_color,smoothstep(0.65,1.0,n.y))*(0.92+variance*0.14)*mix(1.0,0.94,compaction);
+	ROUGHNESS = mix(0.84,0.79,compaction);
+	float grain_width = max(length(dFdx(world_position.xz*8.0)),length(dFdy(world_position.xz*8.0)));
+	detail_filter = 1.0-smoothstep(0.55,2.2,grain_width);
+	vec2 cell = world_position.xz*8.0;
+	float grain_id = hash(floor(cell));
+	float dot_size = length(fract(cell)-vec2(0.5));
+	float aa = max(fwidth(dot_size),0.05);
+	sparkle_mask = (1.0-smoothstep(0.09,0.09+aa,dot_size))*smoothstep(1.0-glitter_density,1.0,grain_id);
+	EMISSION = ALBEDO*magical_emission + vec3(0.06,0.58,0.69)*disturbance*disturbance_intensity;
+}
+
+void light() {
+	vec3 up = normalize((VIEW_MATRIX*vec4(0,1,0,0)).xyz);
+	vec3 compressed = NORMAL - up*dot(NORMAL,up)*0.67;
+	float contrast = smoothstep(-0.035,0.47,dot(compressed,LIGHT));
+	float lambert = max(dot(NORMAL,LIGHT),0.0);
+	float diffuse = mix(lambert,contrast,0.76);
+	DIFFUSE_LIGHT += ALBEDO*LIGHT_COLOR*ATTENUATION*diffuse*moonlight_response/PI;
+	if (layer_view==0 || layer_view>=4) {
+		vec3 half_vector = normalize(LIGHT+VIEW);
+		float ocean = pow(max(dot(mix(smooth_normal_view,NORMAL,0.3),half_vector),0.0),specular_softness)*specular_intensity;
+		float rim = pow(1.0-max(dot(smooth_normal_view,VIEW),0.0),4.5)*0.2*max(dot(smooth_normal_view,LIGHT)+0.2,0.0);
+		SPECULAR_LIGHT += vec3(0.88,0.76,0.56)*max(ocean,rim)*LIGHT_COLOR*ATTENUATION/PI;
+	}
+	if (layer_view==0 || layer_view>=5) {
+		float alignment = max(dot(reflect(-LIGHT,facet_normal),VIEW),0.0);
+		float sparkle = smoothstep(0.88,0.995,alignment)*sparkle_mask*detail_filter;
+		SPECULAR_LIGHT += vec3(1.0,0.88,0.65)*sparkle*glitter_brightness*LIGHT_COLOR*ATTENUATION;
+	}
+}

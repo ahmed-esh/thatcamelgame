@@ -38,6 +38,7 @@ extends CharacterBody3D
 
 @onready var animation_tree: AnimationTree = $AnimationTree
 @onready var animation_player: AnimationPlayer = $VisualContainer/camel_man/AnimationPlayer
+@onready var hoof_skeleton: Skeleton3D = $VisualContainer/camel_man/Camel_Rig/Skeleton3D
 
 @onready var _camera_pivot = $SpringAnchor
 @onready var camera_target: Node3D = $SpringAnchor/SpringArm3D/CameraTarget
@@ -62,6 +63,9 @@ var _is_sliding : bool = false
 var _default_snap_length : float
 var _visual_yaw : float = 0.0
 var _visual_up : Vector3 = Vector3.UP
+var hoof_distance := 0.0
+var hoof_index := 0
+const HOOF_BONES := ["front_L_foot", "rear_R_foot", "front_R_foot", "rear_L_foot"]
 
 
 func _ready() -> void:
@@ -130,6 +134,9 @@ func _update_slide(delta: float) -> void:
 		var steepness := sin(n.angle_to(Vector3.UP))
 		_slide_velocity += downhill * slide_acceleration * steepness * delta
 		_slide_velocity = _slide_velocity.limit_length(max_slide_speed)
+		var terrain := get_node_or_null("../SculptedDesert")
+		if terrain != null:
+			terrain.drag_sand(global_position, downhill, _slide_velocity.length() / 7.0)
 	elif is_on_floor():
 		# Off the steep slope but on the ground: slowly bleed off momentum.
 		# (Airborne = no friction, so momentum is preserved in the air.)
@@ -209,7 +216,34 @@ func _physics_process(delta: float) -> void:
 		_prev_dir = direction
 	
 	_update_visuals(delta)
+	_update_hoofprints(delta)
 
+
+func _update_hoofprints(delta: float) -> void:
+	var terrain := get_node_or_null("../SculptedDesert")
+	if terrain == null or not is_on_floor() or _is_sliding:
+		hoof_distance = 0.0
+		return
+	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
+	var speed := horizontal.length()
+	if speed < 0.8:
+		hoof_distance = 0.0
+		return
+	hoof_distance += speed * delta
+	var stride := 0.95 if speed > 7.0 else 1.3
+	if hoof_distance < stride:
+		return
+	hoof_distance = fmod(hoof_distance, stride)
+	var bone := hoof_skeleton.find_bone(HOOF_BONES[hoof_index % HOOF_BONES.size()])
+	hoof_index += 1
+	if bone < 0:
+		return
+	var point := hoof_skeleton.to_global(hoof_skeleton.get_bone_global_pose(bone).origin)
+	var ground: float = float(terrain.base_height(point.x, point.z))
+	if absf(point.y - ground) > 0.7:
+		return
+	point.y = ground
+	terrain.stamp(point, horizontal.normalized(), 0.34, 0.42, 0.135 if speed < 7.0 else 0.15)
 
 ## Handles facing direction (yaw) and tilting the model to the ground normal while sliding.
 func _update_visuals(delta: float) -> void:
