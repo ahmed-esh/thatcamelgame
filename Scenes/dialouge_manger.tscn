@@ -1,0 +1,342 @@
+[gd_scene format=3 uid="uid://cobbewp8fgfc7"]
+
+[ext_resource type="Texture2D" uid="uid://wbag6fjtwsad" path="res://bubububu.png" id="1_4iooq"]
+[ext_resource type="FontFile" uid="uid://b8lfkddmkiqhb" path="res://EagleLake-Regular.ttf" id="2_cd8ll"]
+
+[node name="Dialouge manger" type="Node3D" unique_id=2058935241]
+
+[node name="man" type="Sprite3D" parent="." unique_id=1259666950]
+transform = Transform3D(0.49999997, 0, 0, 0, 0.5, 0, 0, 0, 0.10899999, 0, 0, 0)
+visible = false
+texture = ExtResource("1_4iooq")
+
+[node name="Oasis" type="Node3D" parent="man" unique_id=4031058]
+visible = false
+
+[node name="1" type="Label3D" parent="man/Oasis" unique_id=1100651839]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42876688, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = " Here. Drink slowly."
+font = ExtResource("2_cd8ll")
+font_size = 200
+
+[node name="2" type="Label3D" parent="man/Oasis" unique_id=354472802]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42876688, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "The mountains are still 
+a day's journey away."
+font = ExtResource("2_cd8ll")
+font_size = 150
+
+[node name="3" type="Label3D" parent="man/Oasis" unique_id=635895824]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42876688, 0.16781223, 0.7367867)
+modulate = Color(0, 0, 0, 1)
+text = "You sound like you've 
+been here before."
+font = ExtResource("2_cd8ll")
+font_size = 150
+
+[node name="P1" type="Node3D" parent="man" unique_id=1036973533]
+visible = false
+
+[node name="1" type="Label3D" parent="man/P1" unique_id=2087917326]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13633479, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "What are all these animals?"
+font = ExtResource("2_cd8ll")
+font_size = 140
+
+[node name="2" type="Label3D" parent="man/P1" unique_id=322959109]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.42876688, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "It's hard to imagine."
+font = ExtResource("2_cd8ll")
+font_size = 150
+
+[node name="P2" type="Node3D" parent="man" unique_id=1056636578]
+visible = false
+
+[node name="1" type="Label3D" parent="man/P2" unique_id=493371892]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13633479, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "What happened to them?"
+font = ExtResource("2_cd8ll")
+font_size = 160
+
+[node name="2" type="Label3D" parent="man/P2" unique_id=2097358696]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25072256, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = " Did any survive?"
+font = ExtResource("2_cd8ll")
+font_size = 200
+
+[node name="P3" type="Node3D" parent="man" unique_id=1944859281]
+visible = false
+
+[node name="1" type="Label3D" parent="man/P3" unique_id=1659546566]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13633479, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "Those are Wadan, 
+aren't they?"
+font = ExtResource("2_cd8ll")
+font_size = 170
+
+[node name="2" type="Label3D" parent="man/P3" unique_id=1093622240]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25072256, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = " What do you mean?
+"
+font = ExtResource("2_cd8ll")
+font_size = 200
+
+[node name="3" type="Label3D" parent="man/P3" unique_id=1026978481]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25072256, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "What happened to 
+the last ones?"
+font = ExtResource("2_cd8ll")
+font_size = 190
+
+[node name="4" type="Label3D" parent="man/P3" unique_id=1721294295]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25072256, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "We?"
+font = ExtResource("2_cd8ll")
+font_size = 190
+
+[node name="P4" type="Node3D" parent="man" unique_id=172319418]
+visible = false
+
+[node name="1" type="Label3D" parent="man/P4" unique_id=102759627]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13633479, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "Are those people dancing?"
+font = ExtResource("2_cd8ll")
+font_size = 160
+
+[node name="2" type="Label3D" parent="man/P4" unique_id=1970977583]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25072256, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "How did you do that?"
+font = ExtResource("2_cd8ll")
+font_size = 180
+
+[node name="3" type="Label3D" parent="man/P4" unique_id=530627401]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25072256, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "We?"
+font = ExtResource("2_cd8ll")
+font_size = 250
+
+[node name="4" type="Label3D" parent="man/P4" unique_id=313233442]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25072256, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "You? a Waddan?"
+font = ExtResource("2_cd8ll")
+font_size = 190
+
+[node name="5" type="Label3D" parent="man/P4" unique_id=1230444207]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.25072256, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "Then why did you 
+come to our village?"
+font = ExtResource("2_cd8ll")
+font_size = 180
+
+[node name="P5" type="Node3D" parent="man" unique_id=1540585820]
+visible = false
+
+[node name="1" type="Label3D" parent="man/P5" unique_id=589761670]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13633479, 0.16781223, 0.7367867)
+modulate = Color(0, 0, 0, 1)
+text = "You don't need me to find a Wadan."
+font = ExtResource("2_cd8ll")
+font_size = 115
+
+[node name="women" type="Sprite3D" parent="." unique_id=1270021103]
+transform = Transform3D(-0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.109, 0, 0, 0)
+texture = ExtResource("1_4iooq")
+
+[node name="Oasis" type="Node3D" parent="women" unique_id=604829295]
+visible = false
+
+[node name="1" type="Label3D" parent="women/Oasis" unique_id=789941012]
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, 0.42876685, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = " How much farther?"
+font = ExtResource("2_cd8ll")
+font_size = 180
+
+[node name="2" type="Label3D" parent="women/Oasis" unique_id=2143640662]
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, 0.42876685, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = " Then we should fill 
+everything we have."
+font = ExtResource("2_cd8ll")
+font_size = 180
+
+[node name="3" type="Label3D" parent="women/Oasis" unique_id=1968578706]
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, 0.42876685, 0.16781223, 0.7367867)
+modulate = Color(0, 0, 0, 1)
+text = " A long time ago."
+font = ExtResource("2_cd8ll")
+font_size = 200
+
+[node name="P1" type="Node3D" parent="women" unique_id=1278425910]
+visible = false
+
+[node name="1" type="Label3D" parent="women/P1" unique_id=225566741]
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, -0.02394712, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = " This was the desert, long ago. 
+Rivers, trees, and life everywhere.
+"
+font = ExtResource("2_cd8ll")
+font_size = 120
+
+[node name="2" type="Label3D" parent="women/P1" unique_id=1092141874]
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, -0.05606401, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "It was beautiful. I wish you
+ could have seen it."
+font = ExtResource("2_cd8ll")
+font_size = 140
+
+[node name="P2" type="Node3D" parent="women" unique_id=135155885]
+visible = false
+
+[node name="1" type="Label3D" parent="women/P2" unique_id=1365908483]
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, -0.02394712, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "The rains stopped. The rivers dried. 
+Most of the animals died.
+"
+font = ExtResource("2_cd8ll")
+font_size = 110
+
+[node name="2" type="Label3D" parent="women/P2" unique_id=1166811256]
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, -0.05606401, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "A few. Those who learned 
+to live without the rain"
+font = ExtResource("2_cd8ll")
+font_size = 140
+
+[node name="P3" type="Node3D" parent="women" unique_id=1309500474]
+visible = false
+
+[node name="1" type="Label3D" parent="women/P3" unique_id=230352513]
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, -0.02394712, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "Yes. They survived the drought. 
+But they couldn't survive mankind.
+"
+font = ExtResource("2_cd8ll")
+font_size = 120
+
+[node name="2" type="Label3D" parent="women/P3" unique_id=1757582215]
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, -0.05606401, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "People began hunting them. 
+Believing they are magical, 
+Until there were almost none left.
+"
+font = ExtResource("2_cd8ll")
+font_size = 120
+
+[node name="3" type="Label3D" parent="women/P3" unique_id=1961367665]
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, -0.05606401, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "We…"
+font = ExtResource("2_cd8ll")
+font_size = 180
+
+[node name="3_5" type="Label3D" parent="women/P3" unique_id=1224587708]
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, -0.05606401, 0.16781223, 0.7367867)
+modulate = Color(0, 0, 0, 1)
+text = "They learned to hide."
+font = ExtResource("2_cd8ll")
+font_size = 180
+
+[node name="P4" type="Node3D" parent="women" unique_id=651661849]
+visible = false
+
+[node name="1" type="Label3D" parent="women/P4" unique_id=1383176895]
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, -0.02394712, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "No, they are not,
+ they are running for their lives
+"
+font = ExtResource("2_cd8ll")
+font_size = 130
+
+[node name="2" type="Label3D" parent="women/P4" unique_id=2047082734]
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, -0.05606401, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "We Wadan have 
+always known magic.
+"
+font = ExtResource("2_cd8ll")
+font_size = 180
+
+[node name="3" type="Label3D" parent="women/P4" unique_id=1280234110]
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, -0.05606401, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = "some hunters shot me, 
+I took the shape of a human. I thought,
+I would be safe among your people."
+font = ExtResource("2_cd8ll")
+font_size = 100
+
+[node name="4" type="Label3D" parent="women/P4" unique_id=837816691]
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, -0.05606401, 0.16781223, 0.7367867)
+visible = false
+modulate = Color(0, 0, 0, 1)
+text = " I was wrong. 
+Humans hunt each other, too.
+"
+font = ExtResource("2_cd8ll")
+font_size = 140
+
+[node name="5" type="Label3D" parent="women/P4" unique_id=2067449949]
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, -0.05606401, 0.16781223, 0.7367867)
+modulate = Color(0, 0, 0, 1)
+text = "I had nowhere else to go."
+font = ExtResource("2_cd8ll")
+font_size = 140
+
+[node name="P5" type="Node3D" parent="women" unique_id=836675961]
+
+[node name="1" type="Label3D" parent="women/P5" unique_id=1708807047]
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, -0.02394712, 0.16781223, 0.7367867)
+modulate = Color(0, 0, 0, 1)
+text = "I just need you to take me home."
+font = ExtResource("2_cd8ll")
+font_size = 130
