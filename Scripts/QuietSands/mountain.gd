@@ -1,3 +1,4 @@
+
 extends Node3D
 
 const Forms = preload("res://Scripts/QuietSands/forms.gd")
@@ -23,6 +24,15 @@ func _ready() -> void:
 		var p := Vector3(cos(a)*(96-t*57),t*31-3,sin(a)*(96-t*57))
 		Forms.add_mesh(self,Forms.rock(9.5,4.0,j*0.7,true),stone,p,true,"NaturalClimbingLedge")
 	_climbing_buttress(stone)
+	for mesh in get_children():
+		if mesh is MeshInstance3D:
+			for body in mesh.get_children():
+				if body is StaticBody3D:
+					for collision in body.get_children():
+						if collision is CollisionShape3D:
+							var shape := (collision as CollisionShape3D).shape
+							if shape is ConcavePolygonShape3D:
+								(shape as ConcavePolygonShape3D).backface_collision = true
 
 func _climbing_buttress(stone: ShaderMaterial) -> void:
 	var vertices := PackedVector3Array()

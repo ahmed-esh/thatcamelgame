@@ -176,15 +176,14 @@ texture = ExtResource("1_4iooq")
 visible = false
 
 [node name="1" type="Label3D" parent="women/Oasis" unique_id=789941012]
-transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, 0.42876685, 0.16781223, 0.7367867)
-visible = false
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, 0.2239691, 0.16781223, 2.2782483)
 modulate = Color(0, 0, 0, 1)
 text = " How much farther?"
 font = ExtResource("2_cd8ll")
 font_size = 180
 
 [node name="2" type="Label3D" parent="women/Oasis" unique_id=2143640662]
-transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, 0.42876685, 0.16781223, 0.7367867)
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, 0.21891654, 0.16781223, 3.04759)
 visible = false
 modulate = Color(0, 0, 0, 1)
 text = " Then we should fill 
@@ -193,7 +192,8 @@ font = ExtResource("2_cd8ll")
 font_size = 180
 
 [node name="3" type="Label3D" parent="women/Oasis" unique_id=1968578706]
-transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, 0.42876685, 0.16781223, 0.7367867)
+transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, 0.42876685, 0.16781223, 2.554009)
+visible = false
 modulate = Color(0, 0, 0, 1)
 text = " A long time ago."
 font = ExtResource("2_cd8ll")
@@ -333,9 +333,11 @@ font = ExtResource("2_cd8ll")
 font_size = 140
 
 [node name="P5" type="Node3D" parent="women" unique_id=836675961]
+visible = false
 
 [node name="1" type="Label3D" parent="women/P5" unique_id=1708807047]
 transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, -0.02394712, 0.16781223, 0.7367867)
+visible = false
 modulate = Color(0, 0, 0, 1)
 text = "I just need you to take me home."
 font = ExtResource("2_cd8ll")

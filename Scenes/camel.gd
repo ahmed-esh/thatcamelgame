@@ -1,3 +1,4 @@
+
 class_name Camel
 extends CharacterBody3D
 
@@ -15,25 +16,14 @@ extends CharacterBody3D
 @export var rotation_speed : float = 12
 
 @export_group("Sliding")
-
 @export var slide_angle_threshold : float = 35.0
-
 @export var slide_acceleration : float = 25.0
-
 @export var max_slide_speed : float = 20.0
-
-
 @export var slide_momentum_decay : float = 3.0
-
 @export var slide_gravity_multiplier : float = 4.0
-
 @export var slide_snap_length : float = 1.0
-
-
 @export_range(0.0, 1.0, 0.01) var uphill_input_threshold : float = 0.2
-
 @export var uphill_slide_cancel_decay : float = 40.0
-
 @export var lock_input_while_sliding : bool = true
 
 @export_group("Sprint")
@@ -53,20 +43,15 @@ extends CharacterBody3D
 @export var follow_stop_distance: float = 4.0
 
 @export_group("Visuals")
-
 @export var ground_align_speed : float = 8.0
-
-
 @export_range(0.0, 45.0, 0.1) var ground_align_threshold : float = 8.0
 
 @onready var animation_tree: AnimationTree = $AnimationTree
 @onready var animation_player: AnimationPlayer = $VisualContainer/camel_man/AnimationPlayer
 @onready var hoof_skeleton: Skeleton3D = $VisualContainer/camel_man/Camel_Rig/Skeleton3D
-
 @onready var _camera_pivot = $SpringAnchor
 @onready var _spring_arm: SpringArm3D = $SpringAnchor/SpringArm3D
 @onready var camera_target: Node3D = $SpringAnchor/SpringArm3D/CameraTarget
-
 @onready var mount_left_start: Node3D = $VisualContainer/camel_man/mount_left_start
 @onready var mount_right_start: Node3D = $VisualContainer/camel_man/mount_right_start
 @onready var skeleton_3d: Skeleton3D = $VisualContainer/camel_man/man_root/Rider_Placement/Character_Rig/Skeleton3D
@@ -75,26 +60,20 @@ extends CharacterBody3D
 const SLIDE_STATE := &"camel_man_slide_added_camel_slide"
 const RIDE_IDLE_STATE := &"ride_idle"
 
-
 @export var slide_anim_start_delay : float = 0.12
-
 @export var slide_anim_end_grace : float = 0.15
 
 var _slide_on_time : float = 0.0
 var _slide_off_time : float = 0.0
 var _slide_anim_playing : bool = false
-
-
 var mouse_sensitivity : float = 1
 var desiredVelocity : Vector3
-
 var camera
 var _prev_dir : Vector3 = Vector3(1,0,0)
 var state_machine : AnimationNodeStateMachinePlayback
 var is_transitioning : bool = false
 var is_accelerating : bool = false
 var current_turn_speed : float
-
 var _slide_velocity : Vector3 = Vector3.ZERO
 var _is_sliding : bool = false
 var _pushing_uphill : bool = false
@@ -117,7 +96,6 @@ var _sprint_camera_started := false
 var _sprint_speed_tween: Tween
 var _sprint_camera_tween: Tween
 
-
 func _ready() -> void:
 	floor_max_angle = deg_to_rad(65.0)
 	_default_snap_length = floor_snap_length
@@ -137,7 +115,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		return
 
-
 	if event is InputEventMouseButton and event.pressed \
 			and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -148,19 +125,15 @@ func _unhandled_input(event: InputEvent) -> void:
 	if (event.is_action_pressed("Mount")):
 		if Global.dialogue_active:
 			return
-
 		if _is_sliding:
 			return
 		GET_OFF_CAMEL()
 		return
 
-
 	if event is InputEventMouseMotion:
 		_camera_pivot.rotation.x -= event.screen_relative.y * mouse_sensitivity
-
 		_camera_pivot.rotation.x = deg_to_rad(clamp(rad_to_deg(_camera_pivot.rotation.x), -tilt_limit, tilt_limit))
 		_camera_pivot.rotation.y += -event.screen_relative.x * mouse_sensitivity
-
 
 func _is_on_steep_slope() -> bool:
 	if not is_on_floor():
@@ -168,18 +141,15 @@ func _is_on_steep_slope() -> bool:
 	var floor_angle := rad_to_deg(get_floor_normal().angle_to(Vector3.UP))
 	return floor_angle >= slide_angle_threshold
 
-
 func _get_downhill() -> Vector3:
 	var downhill := Vector3.DOWN.slide(get_floor_normal())
 	downhill.y = 0
 	return downhill.normalized()
 
-
 func _is_pushing_uphill(move_dir: Vector3) -> bool:
 	if move_dir.length() < 0.1 or not _is_on_steep_slope():
 		return false
 	return move_dir.normalized().dot(_get_downhill()) < -uphill_input_threshold
-
 
 func _is_slide_active() -> bool:
 	if _pushing_uphill:
@@ -251,25 +221,17 @@ func _stop_sprint() -> void:
 		_sprint_camera_tween.tween_property(Global.main_camera, "fov", _normal_camera_fov, 0.85).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 func _update_slide(delta: float) -> void:
-
 	_is_sliding = _is_on_steep_slope() and not _pushing_uphill
-
 	if _is_sliding:
 		var n := get_floor_normal()
 		var downhill := _get_downhill()
-
-
 		var steepness := sin(n.angle_to(Vector3.UP))
 		_slide_velocity += downhill * slide_acceleration * steepness * delta
 		_slide_velocity = _slide_velocity.limit_length(max_slide_speed)
 	elif _pushing_uphill:
-
 		_slide_velocity = _slide_velocity.move_toward(Vector3.ZERO, uphill_slide_cancel_decay * delta)
 	elif is_on_floor():
-
-
 		_slide_velocity = _slide_velocity.move_toward(Vector3.ZERO, slide_momentum_decay * delta)
-
 
 func _physics_process(delta: float) -> void:
 	if not is_active and not is_transitioning:
@@ -363,7 +325,6 @@ func _physics_process(delta: float) -> void:
 	_update_visuals(delta)
 	_update_hoofprints(delta)
 
-
 func _update_hoofprints(delta: float) -> void:
 	var terrain := get_node_or_null("../SculptedDesert")
 	if terrain == null or not is_on_floor():
@@ -390,30 +351,23 @@ func _update_hoofprints(delta: float) -> void:
 	point.y = ground
 	terrain.stamp(point, horizontal.normalized(), 0.34, 0.42, 0.135 if speed < 7.0 else 0.05)
 
-
 func _update_visuals(delta: float) -> void:
-
-
 	if _is_slide_active():
 		var slide_dir := Vector3(_slide_velocity.x, 0.0, _slide_velocity.z)
 		if slide_dir.length() > 0.5:
 			_prev_dir = slide_dir.normalized()
 
-
 	var target_yaw := Vector3.BACK.signed_angle_to(_prev_dir, Vector3.UP)
 	_visual_yaw = lerp_angle(_visual_yaw, target_yaw, rotation_speed * delta)
-
 
 	if is_on_floor():
 		var ground_up := get_floor_normal().normalized()
 		if rad_to_deg(_aligned_normal.angle_to(ground_up)) > ground_align_threshold:
 			_aligned_normal = ground_up
 
-
 	var new_up := _visual_up.lerp(_aligned_normal, clampf(ground_align_speed * delta, 0.0, 1.0))
 	if new_up.length_squared() > 0.0001:
 		_visual_up = new_up.normalized()
-
 
 	var yaw_q := Quaternion(Vector3.UP, _visual_yaw)
 	var tilt_q := Quaternion(Vector3.UP, _visual_up)
@@ -428,7 +382,6 @@ func GET_ON_CAMEL() -> void:
 	is_transitioning = true
 	Global.player.visible = false
 
-
 	animation_tree.animation_finished.connect(on_mount)
 	if (abs((mount_left_start.global_position - Global.player.global_position).length()) >= abs((mount_right_start.global_position - Global.player.global_position).length())) :
 		state_machine.start("mount_right")
@@ -437,25 +390,20 @@ func GET_ON_CAMEL() -> void:
 
 	Global.main_camera.lerp_to_new(Global.camel_camera_node)
 
-
 func GET_OFF_CAMEL() -> void:
 	if Global.dialogue_active:
 		return
 	_stop_sprint()
-
 	is_active = false
 	is_transitioning = true
 
 	Global.player.global_position = leave_position.global_position
 	Global.player.global_basis = leave_position.global_basis
 
-
 	snap_player_to_ground_up()
 
 	animation_tree.animation_finished.connect(on_dismount)
 	state_machine.start("dismount")
-
-
 	await Global.main_camera.lerp_to_new(Global.player_camera_node)
 
 func on_dismount(anim_name):
@@ -463,7 +411,6 @@ func on_dismount(anim_name):
 		return
 	Global.player.animation_tree.active = true
 	$VisualContainer/camel_man/man_root.visible = false
-
 	Global.player.visible = true
 	Global.player.is_active = true
 	is_transitioning = false
@@ -474,19 +421,17 @@ func on_dismount(anim_name):
 func on_mount(anim_name):
 	if (anim_name != &"mount_right" and anim_name != &"mount_left"):
 		return
-
 	is_transitioning = false
 	is_active = true
 	Global.is_camel = true
 	animation_tree.animation_finished.disconnect(on_mount)
 
-
-func snap_player_to_ground_up(start_below: float = 1.0, max_up: float = 5.0) -> void:
+func snap_player_to_ground_up(start_below: float = 8.0, max_up: float = 1.5) -> void:
 	var player: Person = Global.player
 	var space := get_world_3d().direct_space_state
 
-	var from := player.global_position + Vector3.DOWN * start_below
-	var to := player.global_position + Vector3.UP * max_up
+	var from := player.global_position + Vector3.UP * max_up
+	var to := player.global_position + Vector3.DOWN * start_below
 
 	var query := PhysicsRayQueryParameters3D.create(from, to)
 	query.exclude = [player.get_rid(), get_rid()]

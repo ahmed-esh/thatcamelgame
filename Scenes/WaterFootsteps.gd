@@ -24,7 +24,7 @@ func _ready() -> void:
 	_terrain = get_node_or_null("../../SculptedDesert") as Node3D
 	_step_sound = AudioStreamPlayer3D.new()
 	_step_sound.stream = load("res://sounds/FOOTSTEPS.mp3")
-	_step_sound.volume_db = 7 if _actor is Camel else 2
+	_step_sound.volume_db = -25 if _actor is Camel else -22
 	_step_sound.max_distance = 50.0
 	_step_sound.unit_size = 2.0
 	_step_sound.max_polyphony = 3

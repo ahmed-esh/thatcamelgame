@@ -3,13 +3,14 @@ extends Sprite3D
 
 @export_group("Planes Animation")
 @export var rise_distance: float = 3.0
-@export var rise_duration: float = 1.4
+@export var rise_duration: float = 3.0
 @export var starting_scale: float = 0.85
 
 @export_group("Transition")
-@export var pause_duration: float = 0.4
-@export var fade_duration: float = 1.2
+@export var pause_duration: float = 0.8
+@export var fade_duration: float = 2.0
 
+@onready var first_photo: Sprite3D = $P44
 @onready var planes: Sprite3D = $planes
 @onready var people_dying: Sprite3D = $peopledying
 
@@ -24,6 +25,7 @@ func _ready() -> void:
 	_planes_position = planes.position
 	_planes_scale = planes.scale
 
+	first_photo.modulate.a = 1.0
 	planes.modulate.a = 0.0
 	people_dying.modulate.a = 0.0
 
@@ -67,7 +69,7 @@ func play_animation() -> void:
 	_animation_tween.tween_interval(pause_duration)
 
 	_animation_tween.tween_property(
-		self,
+		first_photo,
 		"modulate:a",
 		0.0,
 		fade_duration

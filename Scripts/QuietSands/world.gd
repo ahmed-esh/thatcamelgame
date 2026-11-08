@@ -1,3 +1,4 @@
+
 extends "res://Scenes/GameManager.gd"
 
 const Terrain = preload("res://Scripts/QuietSands/terrain.gd")
@@ -26,7 +27,9 @@ var _next_painting := 1
 var _dismount_area: Area3D
 var _waypoint: Node3D
 var _waypoint_star: Sprite3D
-var _waypoint_particles: GPUParticles3D
+var _waypoint_target: Node3D
+var _waypoint_transition: Tween
+var _painting_triggers: Dictionary = {}
 
 func _physics_process(_delta: float) -> void:
 	if camel != null:
@@ -89,12 +92,21 @@ func _ready() -> void:
 	ready_to_explore = true
 	print("QUIET_SANDS_READY terrain=2048x2048 relief=",terrain.maximum-terrain.minimum," palms=13 ruins=6 outcrops=15 renderer=",RenderingServer.get_current_rendering_method())
 
-
 func _setup_paintings_and_water() -> void:
 	for i in range(1, 5):
 		var painting := get_node_or_null("painintgs/P%d" % i) as Sprite3D
 		if painting != null:
 			_painting_sprites[i] = painting
+			var trigger := painting.get_node_or_null("DialogueTrigger") as Area3D
+			if trigger == null:
+				for child in painting.get_children():
+					if child is Area3D:
+						trigger = child
+						break
+			if trigger != null:
+				trigger.monitoring = true
+				trigger.collision_mask |= $Player.collision_layer | $Camel.collision_layer
+				_painting_triggers[i] = trigger
 	var manager: Node = get_node("Dialouge manger")
 	manager.connect("conversation_finished", Callable(self, "_on_painting_finished"))
 	var water_scene: PackedScene = load("res://Scenes/BoxColliderToGetWater.tscn")
@@ -110,7 +122,7 @@ func _setup_paintings_and_water() -> void:
 		8.0,
 		water_bounds.size.z * absf(water_mesh.scale.z)
 	)
-	box.size = oasis_size * 0.9
+	box.size = oasis_size * 0.7
 	shape_node.position = water_mesh.transform * water_bounds.get_center()
 	shape_node.rotation = water_mesh.rotation
 	shape_node.shape = box
@@ -137,84 +149,52 @@ func _make_waypoint_texture() -> ImageTexture:
 			var dx := (float(x) - 31.5) / 31.5
 			var dy := (float(y) - 31.5) / 31.5
 			var radius := sqrt(dx * dx + dy * dy)
-			var glow := exp(-radius * 5.0) * 0.55
+			var glow := exp(-radius * 5.5) * 0.38
 			var rays := exp(-absf(dx) * 16.0 - absf(dy) * 2.6) + exp(-absf(dy) * 16.0 - absf(dx) * 2.6)
-			var alpha := clampf(glow + rays * 0.85, 0.0, 1.0) * (1.0 - smoothstep(0.5, 1.0, radius))
-			picture.set_pixel(x, y, Color(0.65, 0.95, 1.0, alpha))
+			var alpha := clampf(glow + rays * 0.42, 0.0, 0.7) * (1.0 - smoothstep(0.5, 1.0, radius))
+			picture.set_pixel(x, y, Color(0.7, 0.9, 1.0, alpha))
 	return ImageTexture.create_from_image(picture)
 
 func _setup_waypoint() -> void:
 	_waypoint = Node3D.new()
 	_waypoint.name = "DestinationLight"
 	add_child(_waypoint)
-	var texture := _make_waypoint_texture()
 	_waypoint_star = Sprite3D.new()
-	_waypoint_star.texture = texture
-	_waypoint_star.pixel_size = 0.1
+	_waypoint_star.texture = _make_waypoint_texture()
+	_waypoint_star.pixel_size = 0.03
 	_waypoint_star.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	_waypoint_star.shaded = false
 	_waypoint_star.fixed_size = true
 	_waypoint_star.no_depth_test = true
-	_waypoint_star.modulate = Color(0.85, 0.98, 1.0, 1.0)
+	_waypoint_star.modulate = Color(0.76, 0.9, 1.0, 0.0)
 	_waypoint.add_child(_waypoint_star)
 	var bob := create_tween().set_loops()
 	bob.tween_property(_waypoint_star, "position:y", 0.85, 1.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	bob.tween_property(_waypoint_star, "position:y", 0.0, 1.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_waypoint_particles = GPUParticles3D.new()
-	_waypoint_particles.amount = 64
-	_waypoint_particles.lifetime = 2.4
-	_waypoint_particles.preprocess = 2.4
-	_waypoint_particles.visibility_aabb = AABB(Vector3(-6, -6, -6), Vector3(12, 12, 12))
-	var process := ParticleProcessMaterial.new()
-	process.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
-	process.emission_sphere_radius = 2.0
-	process.direction = Vector3.UP
-	process.spread = 70.0
-	process.initial_velocity_min = 0.25
-	process.initial_velocity_max = 1.1
-	process.gravity = Vector3(0.0, -0.1, 0.0)
-	process.scale_min = 0.25
-	process.scale_max = 0.7
-	var fade := Gradient.new()
-	fade.set_color(0, Color(0.6, 0.9, 1.0, 0.0))
-	fade.set_color(1, Color(0.6, 0.9, 1.0, 0.0))
-	fade.add_point(0.25, Color(0.6, 0.9, 1.0, 0.8))
-	fade.add_point(0.7, Color(0.6, 0.9, 1.0, 0.55))
-	var ramp := GradientTexture1D.new()
-	ramp.gradient = fade
-	process.color_ramp = ramp
-	_waypoint_particles.process_material = process
-	var quad := QuadMesh.new()
-	quad.size = Vector2(0.7, 0.7)
-	var sparkle := StandardMaterial3D.new()
-	sparkle.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	sparkle.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	sparkle.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	sparkle.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
-	sparkle.albedo_texture = texture
-	sparkle.albedo_color = Color(0.8, 0.96, 1.0)
-	sparkle.emission_enabled = true
-	sparkle.emission = Color(0.3, 0.8, 1.0)
-	sparkle.emission_energy_multiplier = 2.0
-	quad.material = sparkle
-	_waypoint_particles.draw_pass_1 = quad
-	_waypoint.add_child(_waypoint_particles)
+	var shimmer := create_tween().set_loops()
+	shimmer.tween_property(_waypoint_star, "scale", Vector3.ONE * 1.08, 1.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	shimmer.tween_property(_waypoint_star, "scale", Vector3.ONE, 1.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	_update_waypoint_position()
 
 func _update_waypoint_position() -> void:
 	if _waypoint == null:
 		return
-	if not Global.game_started or Global.in_cutscene:
-		_waypoint.hide()
+	var target: Node3D = null
+	if Global.game_started and not Global.in_cutscene:
+		target = oasis
+		if _oasis_dialogue_finished:
+			target = _painting_sprites.get(_next_painting) as Node3D
+	if target == _waypoint_target:
 		return
-	var target: Node3D = oasis
-	if _oasis_dialogue_finished:
-		target = _painting_sprites.get(_next_painting) as Node3D
-	if target == null:
-		_waypoint.hide()
-		return
-	_waypoint.show()
-	_waypoint.global_position = target.global_position + Vector3.UP * 9.0
+	_waypoint_target = target
+	if _waypoint_transition != null and _waypoint_transition.is_running():
+		_waypoint_transition.kill()
+	_waypoint_transition = create_tween()
+	if _waypoint_star.modulate.a > 0.01:
+		_waypoint_transition.tween_property(_waypoint_star, "modulate:a", 0.0, 0.45).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	if target != null:
+		_waypoint_transition.tween_property(_waypoint, "global_position", target.global_position + Vector3.UP * 9.0, 0.001)
+		_waypoint_transition.tween_property(_waypoint_star, "modulate:a", 0.68, 0.65).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 func _bind_water_prompt() -> void:
 	var prompt: Label3D = dialogue_label
@@ -263,7 +243,7 @@ func _check_paintings() -> void:
 	if not _painting_sprites.has(_next_painting):
 		return
 	var painting: Sprite3D = _painting_sprites[_next_painting]
-	var trigger := painting.get_node_or_null("DialogueTrigger") as Area3D
+	var trigger := _painting_triggers.get(_next_painting) as Area3D
 	if trigger == null:
 		return
 	if not trigger.overlaps_body($Player) and not trigger.overlaps_body(camel):
