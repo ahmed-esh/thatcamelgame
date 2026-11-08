@@ -89,6 +89,7 @@ func _setup_paintings_and_water() -> void:
 			_painting_sprites[i] = painting
 	var manager: Node = get_node("Dialouge manger")
 	manager.connect("conversation_finished", Callable(self, "_on_painting_finished"))
+	manager.connect("p4_first_woman_text_finished", Callable(self, "_on_p4_first_woman_text_finished"))
 	var water_scene: PackedScene = load("res://Scenes/BoxColliderToGetWater.tscn")
 	_water_interaction = water_scene.instantiate() as Area3D
 	oasis.add_child(_water_interaction)
@@ -179,6 +180,10 @@ func _check_return_to_camel() -> void:
 		Global.in_cutscene = true
 		get_node("Dialouge manger").call("oasis")
 
+func _on_p4_first_woman_text_finished() -> void:
+	if _active_painting == 4:
+		_painting_sprites[4].call("play_animation")
+
 func _on_painting_finished(conversation: String) -> void:
 	if conversation == "Oasis":
 		Global.in_cutscene = false
@@ -189,7 +194,14 @@ func _on_painting_finished(conversation: String) -> void:
 	_active_painting = 0
 	_painting_seen[id] = true
 	_glow_painting(_painting_sprites[id])
-	if _painting_seen.has(1) and _painting_seen.has(2) and _painting_seen.has(3) and not _coverup_revealed:
+	if id == 4:
+		await get_tree().create_timer(5.0).timeout
+		var final_scene := load("res://finalCutscene.tscn").instantiate() as Node3D
+		add_child(final_scene)
+		final_scene.global_position = Vector3(-296.28, 3.897, 430.637)
+		(final_scene.get_node("Camera3D") as Camera3D).make_current()
+		(final_scene.get_node("AnimationPlayer") as AnimationPlayer).play("cutscene")
+	elif _painting_seen.has(1) and _painting_seen.has(2) and _painting_seen.has(3) and not _coverup_revealed:
 		_coverup_revealed = true
 		await _sink_coverup()
 	else:

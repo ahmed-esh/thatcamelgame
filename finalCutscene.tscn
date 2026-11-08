@@ -1045,7 +1045,7 @@ libraries/ = SubResource("AnimationLibrary_2hhg3")
 [node name="Man" parent="." unique_id=1790915067 instance=ExtResource("1_iyobr")]
 transform = Transform3D(-0.99999994, 0, 1.5099579e-07, 0, 1, 0, -1.5099579e-07, 0, -0.99999994, -8.339738, -0.13349521, 1.5953071)
 
-[node name="Skeleton3D" parent="Man/man_root/Rider_Placement/Character_Rig" parent_id_path=PackedInt32Array(1790915067, 1769579338) index="0" unique_id=1554186291]
+[node name="Skeleton3D" parent="Man/man_root/Rider_Placement/Character_Rig" parent_id_path=PackedInt32Array(1790915067, 1220412258) index="0" unique_id=695755876]
 bones/0/rotation = Quaternion(2.5063712e-24, 1.2531856e-24, 1.4644919e-16, 1)
 bones/1/position = Vector3(0.07650001, 0.027999936, -0.054999977)
 bones/1/rotation = Quaternion(0.67485327, 0.4910724, 0.49107826, 0.24952576)
@@ -1121,16 +1121,16 @@ bones/46/rotation = Quaternion(0.15114197, 0.046535715, -0.05171231, 0.98606104)
 bones/47/position = Vector3(3.5595067e-06, 0.26465693, 3.5163833e-07)
 bones/47/rotation = Quaternion(-0.31725803, -0.4277694, 0.55327916, 0.64050204)
 
-[node name="hand_L" parent="Man/man_root/Rider_Placement/Character_Rig/Skeleton3D" index="0" unique_id=1372268685]
+[node name="hand_L" parent="Man/man_root/Rider_Placement/Character_Rig/Skeleton3D" index="0" unique_id=246088397]
 transform = Transform3D(0.9996693, 0.01817869, 0.018175766, 0.01989539, -0.99486727, -0.09921095, 0.016279042, 0.09953986, -0.9949001, 0.16304745, 0.48620766, 0.014879822)
 
-[node name="hand_R" parent="Man/man_root/Rider_Placement/Character_Rig/Skeleton3D" index="1" unique_id=752896715]
+[node name="hand_R" parent="Man/man_root/Rider_Placement/Character_Rig/Skeleton3D" index="1" unique_id=473451345]
 transform = Transform3D(0.9996693, -0.018178917, -0.018175736, -0.019655712, -0.99621475, -0.0846723, -0.016567603, 0.08500163, -0.996243, -0.16295254, 0.4860177, 0.010726979)
 
 [node name="CamelWithMan" parent="." unique_id=1993754003 instance=ExtResource("2_sl10w")]
 transform = Transform3D(1, -1.7484555e-07, 0, 1.7484555e-07, 1, 0, 0, 0, 1, 0, 0, 0)
 
-[node name="Skeleton3D" parent="CamelWithMan/Camel_Rig" parent_id_path=PackedInt32Array(1993754003, 57509417) index="2" unique_id=1390646372]
+[node name="Skeleton3D" parent="CamelWithMan/Camel_Rig" parent_id_path=PackedInt32Array(1993754003, 868791356) index="2" unique_id=357581490]
 bones/1/position = Vector3(-0.59499997, 0.13999999, -0.36499998)
 bones/3/position = Vector3(-0.5950001, 0.13999999, 0.36499998)
 bones/5/position = Vector3(0.81499994, 0.14, -0.37499997)
@@ -1191,14 +1191,14 @@ bones/45/rotation = Quaternion(0.07628202, -6.250943e-08, 1.8776467e-08, 0.99708
 bones/46/rotation = Quaternion(0.51839817, -0.47137398, 0.6584854, -0.27471247)
 bones/47/rotation = Quaternion(-0.0723807, -0.16866094, 0.15413916, 0.9708531)
 
-[node name="spine" parent="CamelWithMan/Camel_Rig/Skeleton3D" index="0" unique_id=1621880549]
+[node name="spine" parent="CamelWithMan/Camel_Rig/Skeleton3D" index="0" unique_id=1043773761]
 transform = Transform3D(0.05011151, -0.9602219, 0.2740295, 0.2150636, 0.2789694, 0.9335346, -0.9711494, 0.0122308945, 0.22087371, 5.9604645e-08, 1.9453591, -7.1168316e-08)
 
-[node name="camel_reins_002" parent="CamelWithMan/Camel_Rig/Skeleton3D" index="2" unique_id=1482002057]
+[node name="camel_reins_002" parent="CamelWithMan/Camel_Rig/Skeleton3D" index="2" unique_id=507181975]
 blend_shapes/left_loose = 1.0
 blend_shapes/right_loose = 1.0
 
-[node name="Skeleton3D" parent="CamelWithMan/man_root/Rider_Placement/Character_Rig" parent_id_path=PackedInt32Array(1993754003, 302422946) index="0" unique_id=497170370]
+[node name="Skeleton3D" parent="CamelWithMan/man_root/Rider_Placement/Character_Rig" parent_id_path=PackedInt32Array(1993754003, 848177097) index="0" unique_id=1637698944]
 bones/9/rotation = Quaternion(-0.43106008, -0.46737245, 0.3694962, 0.6776598)
 bones/10/rotation = Quaternion(-0.0055475896, -0.02386897, 0.023222087, 0.99943006)
 bones/11/rotation = Quaternion(-0.010966895, -0.0956285, 0.095444895, 0.99077004)
@@ -1209,14 +1209,15 @@ bones/26/rotation = Quaternion(0.9983422, 0.037710793, 0.037719112, -0.021634497
 bones/42/rotation = Quaternion(0.9986179, 0.036261663, 0.036264487, -0.011505294)
 bones/45/rotation = Quaternion(0.9986179, -0.03626165, -0.036264554, -0.011505286)
 
-[node name="hand_L" parent="CamelWithMan/man_root/Rider_Placement/Character_Rig/Skeleton3D" index="0" unique_id=150021819]
+[node name="hand_L" parent="CamelWithMan/man_root/Rider_Placement/Character_Rig/Skeleton3D" index="0" unique_id=2125517336]
 transform = Transform3D(0.9996696, 0.018179335, 0.018175751, 0.018176408, -0.9998346, 0.0003308095, 0.018178701, -4.7683716e-07, -0.99983466, 0.16300017, 0.49000022, -1.3278684e-07)
 
-[node name="hand_R" parent="CamelWithMan/man_root/Rider_Placement/Character_Rig/Skeleton3D" index="1" unique_id=1203157615]
+[node name="hand_R" parent="CamelWithMan/man_root/Rider_Placement/Character_Rig/Skeleton3D" index="1" unique_id=1620412935]
 transform = Transform3D(0.9996692, -0.018179096, -0.018175423, -0.018176079, -0.99983436, 0.00033078343, -0.018178463, -4.0233135e-07, -0.9998347, -0.16300006, 0.49000013, -1.1902617e-07)
 
 [node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=1961362320]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.05111003, 0)
+visible = false
 size = Vector3(100, 0.1, 100)
 
 [node name="the oasis" type="Node3D" parent="." unique_id=1726326763]
@@ -1490,7 +1491,7 @@ omni_range = 26.0
 [node name="waddan_rigged" parent="the oasis/Oasis" unique_id=2059308687 instance=ExtResource("5_qwm8r")]
 transform = Transform3D(2.454544, 0, 1.7248814, 0, 3.0000005, 0, -1.7248814, 0, 2.454544, 24.87347, 0, -20.779694)
 
-[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged/waddan_rig" parent_id_path=PackedInt32Array(2059308687, 1796158712) index="0" unique_id=1770566036]
+[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged/waddan_rig" parent_id_path=PackedInt32Array(2059308687, 1914901593) index="0" unique_id=1644449993]
 bones/1/position = Vector3(-3.1953957e-09, 0.44863924, -0.05131802)
 bones/1/rotation = Quaternion(-0.69412106, 2.9864808e-08, 2.3626152e-08, 0.7198583)
 bones/2/rotation = Quaternion(0.99424624, 7.581971e-09, 7.778099e-08, 0.10711947)
@@ -1515,7 +1516,7 @@ bones/20/rotation = Quaternion(-0.2826242, -0.00024624536, 0.00023063093, 0.9592
 [node name="waddan_rigged2" parent="the oasis/Oasis" unique_id=1136124587 instance=ExtResource("5_qwm8r")]
 transform = Transform3D(2.4545445, 0, 1.7248814, 0, 3.000001, 0, -1.7248814, 0, 2.4545445, -19.820766, 1.0579824e-06, -21.66822)
 
-[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged2/waddan_rig" parent_id_path=PackedInt32Array(1136124587, 1796158712) index="0" unique_id=1770566036]
+[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged2/waddan_rig" parent_id_path=PackedInt32Array(1136124587, 1914901593) index="0" unique_id=1644449993]
 bones/1/position = Vector3(-3.1002545e-09, 0.448, -0.050000004)
 bones/1/rotation = Quaternion(-0.69283193, 2.9907046e-08, 2.3572685e-08, 0.72109914)
 bones/2/rotation = Quaternion(0.99424624, 7.581971e-09, 7.778099e-08, 0.10711947)
@@ -1540,7 +1541,7 @@ bones/20/rotation = Quaternion(-0.2826242, -0.00024624536, 0.00023063093, 0.9592
 [node name="waddan_rigged3" parent="the oasis/Oasis" unique_id=672718002 instance=ExtResource("5_qwm8r")]
 transform = Transform3D(2.4545453, 0, 1.7248816, 0, 3.0000014, 0, -1.7248816, 0, 2.4545453, -1.4194303, -0.6643052, 3.4559708)
 
-[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged3/waddan_rig" parent_id_path=PackedInt32Array(672718002, 1796158712) index="0" unique_id=1770566036]
+[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged3/waddan_rig" parent_id_path=PackedInt32Array(672718002, 1914901593) index="0" unique_id=1644449993]
 bones/1/position = Vector3(-3.1002545e-09, 0.448, -0.050000004)
 bones/1/rotation = Quaternion(-0.69283193, 2.9907046e-08, 2.3572685e-08, 0.72109914)
 bones/2/rotation = Quaternion(0.99424624, 7.581971e-09, 7.778099e-08, 0.10711947)
@@ -1565,7 +1566,7 @@ bones/20/rotation = Quaternion(-0.2826242, -0.00024624536, 0.00023063093, 0.9592
 [node name="waddan_rigged4" parent="the oasis/Oasis" unique_id=1870406105 instance=ExtResource("5_qwm8r")]
 transform = Transform3D(-0.2501326, 0, 2.9895566, 0, 3.0000021, 0, -2.9895566, 0, -0.2501326, 29.132725, -0.6643053, 0.25287628)
 
-[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged4/waddan_rig" parent_id_path=PackedInt32Array(1870406105, 1796158712) index="0" unique_id=1770566036]
+[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged4/waddan_rig" parent_id_path=PackedInt32Array(1870406105, 1914901593) index="0" unique_id=1644449993]
 bones/1/position = Vector3(-3.1002545e-09, 0.448, -0.050000004)
 bones/1/rotation = Quaternion(-0.69283193, 2.9907046e-08, 2.3572685e-08, 0.72109914)
 bones/2/rotation = Quaternion(0.99424624, 7.581971e-09, 7.778099e-08, 0.10711947)
@@ -1590,7 +1591,7 @@ bones/20/rotation = Quaternion(-0.2826242, -0.00024624536, 0.00023063093, 0.9592
 [node name="waddan_rigged5" parent="the oasis/Oasis" unique_id=20314472 instance=ExtResource("5_qwm8r")]
 transform = Transform3D(-0.25013262, 0, 2.989557, 0, 3.0000026, 0, -2.989557, 0, -0.25013262, 32.61407, -0.38923973, -11.77182)
 
-[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged5/waddan_rig" parent_id_path=PackedInt32Array(20314472, 1796158712) index="0" unique_id=1770566036]
+[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged5/waddan_rig" parent_id_path=PackedInt32Array(20314472, 1914901593) index="0" unique_id=1644449993]
 bones/1/position = Vector3(-3.1002545e-09, 0.448, -0.050000004)
 bones/1/rotation = Quaternion(-0.69283193, 2.9907046e-08, 2.3572685e-08, 0.72109914)
 bones/2/rotation = Quaternion(0.99424624, 7.581971e-09, 7.778099e-08, 0.10711947)
@@ -1615,7 +1616,7 @@ bones/20/rotation = Quaternion(-0.2826242, -0.00024624536, 0.00023063093, 0.9592
 [node name="waddan_rigged6" parent="the oasis/Oasis" unique_id=1051802208 instance=ExtResource("5_qwm8r")]
 transform = Transform3D(2.961225, 0, 0.48080063, 0, 3.0000038, 0, -0.48080063, 0, 2.961225, -11.857683, -0.3892399, -25.861153)
 
-[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged6/waddan_rig" parent_id_path=PackedInt32Array(1051802208, 1796158712) index="0" unique_id=1770566036]
+[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged6/waddan_rig" parent_id_path=PackedInt32Array(1051802208, 1914901593) index="0" unique_id=1644449993]
 bones/1/position = Vector3(-3.1002545e-09, 0.448, -0.050000004)
 bones/1/rotation = Quaternion(-0.69283193, 2.9907046e-08, 2.3572685e-08, 0.72109914)
 bones/2/rotation = Quaternion(0.99424624, 7.581971e-09, 7.778099e-08, 0.10711947)
@@ -1640,7 +1641,7 @@ bones/20/rotation = Quaternion(-0.2826242, -0.00024624536, 0.00023063093, 0.9592
 [node name="waddan_rigged7" parent="the oasis/Oasis" unique_id=1570900328 instance=ExtResource("5_qwm8r")]
 transform = Transform3D(2.961225, 0, 0.48080063, 0, 3.0000038, 0, -0.48080063, 0, 2.961225, -11.857683, -0.3892399, -25.861153)
 
-[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged7/waddan_rig" parent_id_path=PackedInt32Array(1570900328, 1796158712) index="0" unique_id=1770566036]
+[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged7/waddan_rig" parent_id_path=PackedInt32Array(1570900328, 1914901593) index="0" unique_id=1644449993]
 bones/1/position = Vector3(-3.1002545e-09, 0.448, -0.050000004)
 bones/1/rotation = Quaternion(-0.69283193, 2.9907046e-08, 2.3572685e-08, 0.72109914)
 bones/2/rotation = Quaternion(0.99424624, 7.581971e-09, 7.778099e-08, 0.10711947)
@@ -1665,7 +1666,7 @@ bones/20/rotation = Quaternion(-0.2826242, -0.00024624536, 0.00023063093, 0.9592
 [node name="waddan_rigged8" parent="the oasis/Oasis" unique_id=2126138195 instance=ExtResource("5_qwm8r")]
 transform = Transform3D(-0.8445837, 0, -2.8786635, 0, 3.0000052, 0, 2.8786635, 0, -0.8445837, 27.23758, -0.38924012, -22.754807)
 
-[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged8/waddan_rig" parent_id_path=PackedInt32Array(2126138195, 1796158712) index="0" unique_id=1770566036]
+[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged8/waddan_rig" parent_id_path=PackedInt32Array(2126138195, 1914901593) index="0" unique_id=1644449993]
 bones/1/position = Vector3(-3.1002545e-09, 0.448, -0.050000004)
 bones/1/rotation = Quaternion(-0.69283193, 2.9907046e-08, 2.3572685e-08, 0.72109914)
 bones/2/rotation = Quaternion(0.99424624, 7.581971e-09, 7.778099e-08, 0.10711947)
@@ -1690,7 +1691,7 @@ bones/20/rotation = Quaternion(-0.2826242, -0.00024624536, 0.00023063093, 0.9592
 [node name="waddan_rigged9" parent="the oasis/Oasis" unique_id=920686311 instance=ExtResource("5_qwm8r")]
 transform = Transform3D(-0.8445837, 0, -2.8786638, 0, 3.0000055, 0, 2.8786638, 0, -0.8445837, 35.469643, -0.38924015, -11.908394)
 
-[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged9/waddan_rig" parent_id_path=PackedInt32Array(920686311, 1796158712) index="0" unique_id=1770566036]
+[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged9/waddan_rig" parent_id_path=PackedInt32Array(920686311, 1914901593) index="0" unique_id=1644449993]
 bones/1/position = Vector3(-3.1002545e-09, 0.448, -0.050000004)
 bones/1/rotation = Quaternion(-0.69283193, 2.9907046e-08, 2.3572685e-08, 0.72109914)
 bones/2/rotation = Quaternion(0.99424624, 7.581971e-09, 7.778099e-08, 0.10711947)
@@ -1715,7 +1716,7 @@ bones/20/rotation = Quaternion(-0.2826242, -0.00024624536, 0.00023063093, 0.9592
 [node name="waddan_rigged10" parent="the oasis/Oasis" unique_id=1140815133 instance=ExtResource("5_qwm8r")]
 transform = Transform3D(-4.0750895, 0, 1.9439358, 0, 4.515002, 0, -1.9439358, 0, -4.0750895, 36.191734, -0.38924038, 3.6236038)
 
-[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged10/waddan_rig" parent_id_path=PackedInt32Array(1140815133, 1796158712) index="0" unique_id=1770566036]
+[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged10/waddan_rig" parent_id_path=PackedInt32Array(1140815133, 1914901593) index="0" unique_id=1644449993]
 bones/1/position = Vector3(-3.1002545e-09, 0.448, -0.050000004)
 bones/1/rotation = Quaternion(-0.69283193, 2.9907046e-08, 2.3572685e-08, 0.72109914)
 bones/2/rotation = Quaternion(0.99424624, 7.581971e-09, 7.778099e-08, 0.10711947)
@@ -1740,7 +1741,7 @@ bones/20/rotation = Quaternion(-0.2826242, -0.00024624536, 0.00023063093, 0.9592
 [node name="waddan_rigged11" parent="the oasis/Oasis" unique_id=1107862782 instance=ExtResource("5_qwm8r")]
 transform = Transform3D(4.2444243, 0, 1.539515, 0, 4.5150027, 0, -1.539515, 0, 4.2444243, -13.117825, -0.38924056, 0.45269012)
 
-[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged11/waddan_rig" parent_id_path=PackedInt32Array(1107862782, 1796158712) index="0" unique_id=1770566036]
+[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged11/waddan_rig" parent_id_path=PackedInt32Array(1107862782, 1914901593) index="0" unique_id=1644449993]
 bones/1/position = Vector3(-3.1002545e-09, 0.448, -0.050000004)
 bones/1/rotation = Quaternion(-0.69283193, 2.9907046e-08, 2.3572685e-08, 0.72109914)
 bones/2/rotation = Quaternion(0.99424624, 7.581971e-09, 7.778099e-08, 0.10711947)
@@ -1765,7 +1766,7 @@ bones/20/rotation = Quaternion(-0.2826242, -0.00024624536, 0.00023063093, 0.9592
 [node name="waddan_rigged12" parent="the oasis/Oasis" unique_id=1052345157 instance=ExtResource("5_qwm8r")]
 transform = Transform3D(4.2444243, 0, 1.539515, 0, 4.5150027, 0, -1.539515, 0, 4.2444243, -13.117825, -0.38924056, 0.45269012)
 
-[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged12/waddan_rig" parent_id_path=PackedInt32Array(1052345157, 1796158712) index="0" unique_id=1770566036]
+[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged12/waddan_rig" parent_id_path=PackedInt32Array(1052345157, 1914901593) index="0" unique_id=1644449993]
 bones/1/position = Vector3(-3.1002545e-09, 0.448, -0.050000004)
 bones/1/rotation = Quaternion(-0.69283193, 2.9907046e-08, 2.3572685e-08, 0.72109914)
 bones/2/rotation = Quaternion(0.99424624, 7.581971e-09, 7.778099e-08, 0.10711947)
@@ -1790,7 +1791,7 @@ bones/20/rotation = Quaternion(-0.2826242, -0.00024624536, 0.00023063093, 0.9592
 [node name="waddan_rigged13" parent="the oasis/Oasis" unique_id=522466748 instance=ExtResource("5_qwm8r")]
 transform = Transform3D(4.2444243, 0, 1.5395151, 0, 4.515003, 0, -1.5395151, 0, 4.2444243, -20.464773, -0.3892406, -23.350525)
 
-[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged13/waddan_rig" parent_id_path=PackedInt32Array(522466748, 1796158712) index="0" unique_id=1770566036]
+[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged13/waddan_rig" parent_id_path=PackedInt32Array(522466748, 1914901593) index="0" unique_id=1644449993]
 bones/1/position = Vector3(-3.1002545e-09, 0.448, -0.050000004)
 bones/1/rotation = Quaternion(-0.69283193, 2.9907046e-08, 2.3572685e-08, 0.72109914)
 bones/2/rotation = Quaternion(0.99424624, 7.581971e-09, 7.778099e-08, 0.10711947)
@@ -1815,7 +1816,7 @@ bones/20/rotation = Quaternion(-0.2826242, -0.00024624536, 0.00023063093, 0.9592
 [node name="waddan_rigged14" parent="the oasis/Oasis" unique_id=1859924338 instance=ExtResource("5_qwm8r")]
 transform = Transform3D(2.4713864, 0, 3.7785573, 0, 4.5150046, 0, -3.7785573, 0, 2.4713864, 27.031605, -0.38924068, 12.046082)
 
-[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged14/waddan_rig" parent_id_path=PackedInt32Array(1859924338, 1796158712) index="0" unique_id=1770566036]
+[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged14/waddan_rig" parent_id_path=PackedInt32Array(1859924338, 1914901593) index="0" unique_id=1644449993]
 bones/1/position = Vector3(-3.1002545e-09, 0.448, -0.050000004)
 bones/1/rotation = Quaternion(-0.69283193, 2.9907046e-08, 2.3572685e-08, 0.72109914)
 bones/2/rotation = Quaternion(0.99424624, 7.581971e-09, 7.778099e-08, 0.10711947)
@@ -1840,7 +1841,7 @@ bones/20/rotation = Quaternion(-0.2826242, -0.00024624536, 0.00023063093, 0.9592
 [node name="waddan_rigged15" parent="the oasis/Oasis" unique_id=570069505 instance=ExtResource("5_qwm8r")]
 transform = Transform3D(2.4713867, 0, 3.778558, 0, 4.5150056, 0, -3.778558, 0, 2.4713867, -28.036932, -0.3892408, 8.097443)
 
-[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged15/waddan_rig" parent_id_path=PackedInt32Array(570069505, 1796158712) index="0" unique_id=1770566036]
+[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged15/waddan_rig" parent_id_path=PackedInt32Array(570069505, 1914901593) index="0" unique_id=1644449993]
 bones/1/position = Vector3(-3.1002545e-09, 0.448, -0.050000004)
 bones/1/rotation = Quaternion(-0.69283193, 2.9907046e-08, 2.3572685e-08, 0.72109914)
 bones/2/rotation = Quaternion(0.99424624, 7.581971e-09, 7.778099e-08, 0.10711947)
@@ -1865,7 +1866,7 @@ bones/20/rotation = Quaternion(-0.2826242, -0.00024624536, 0.00023063093, 0.9592
 [node name="waddan_rigged16" parent="the oasis/Oasis" unique_id=2144781618 instance=ExtResource("5_qwm8r")]
 transform = Transform3D(2.4713867, 0, 3.7785583, 0, 4.515006, 0, -3.7785583, 0, 2.4713867, -30.723225, -0.38924083, -10.128853)
 
-[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged16/waddan_rig" parent_id_path=PackedInt32Array(2144781618, 1796158712) index="0" unique_id=1770566036]
+[node name="Skeleton3D" parent="the oasis/Oasis/waddan_rigged16/waddan_rig" parent_id_path=PackedInt32Array(2144781618, 1914901593) index="0" unique_id=1644449993]
 bones/1/position = Vector3(-3.1002545e-09, 0.448, -0.050000004)
 bones/1/rotation = Quaternion(-0.69283193, 2.9907046e-08, 2.3572685e-08, 0.72109914)
 bones/2/rotation = Quaternion(0.99424624, 7.581971e-09, 7.778099e-08, 0.10711947)
@@ -1888,7 +1889,7 @@ bones/19/rotation = Quaternion(-0.610422, 0.0008159903, 0.00090587646, 0.7920754
 bones/20/rotation = Quaternion(-0.2826242, -0.00024624536, 0.00023063093, 0.95923066)
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=2026432197]
-transform = Transform3D(-0.13052456, 0.0137679735, 0.99134946, 0, 0.99990356, -0.013886774, -0.99144506, -0.001812565, -0.13051197, -4.464842, 2.3672588, -3.0842917)
+transform = Transform3D(-0.13052456, 0.013767973, 0.9913494, 0, 0.9999035, -0.013886773, -0.99144506, -0.0018125649, -0.13051195, -4.464842, 2.3672588, -3.0842917)
 
 [node name="Sprite3D" type="Sprite3D" parent="Camera3D" unique_id=655101967]
 transform = Transform3D(10, -1.4901164e-07, 2.9802325e-07, 1.4901164e-07, 10, 7.4505806e-08, -2.9802325e-07, -7.45058e-08, 10, 0.070002556, -0.14382148, -0.92369556)
@@ -1963,7 +1964,7 @@ font_size = 200
 transform = Transform3D(3.5592248, 0, 1.73595, 0, 3.96, 0, -1.73595, 0, 3.5592248, -12.015, -0.025, 4.25)
 visible = false
 
-[node name="Skeleton3D" parent="waddan_rigged/waddan_rig" parent_id_path=PackedInt32Array(1563217015, 1796158712) index="0" unique_id=1770566036]
+[node name="Skeleton3D" parent="waddan_rigged/waddan_rig" parent_id_path=PackedInt32Array(1563217015, 1914901593) index="0" unique_id=1644449993]
 bones/1/position = Vector3(-2.6320148e-09, 0.4115162, -0.040910877)
 bones/1/rotation = Quaternion(-0.7079276, -0.0061328695, 0.005634893, 0.7062359)
 bones/2/rotation = Quaternion(0.98925066, -2.5088205e-08, 8.156549e-08, 0.14623003)
@@ -1989,7 +1990,7 @@ bones/20/rotation = Quaternion(-0.34139466, 0.00030692908, 0.0030222628, 0.93991
 [node name="camel_man_no_tent" parent="." unique_id=1318453160 instance=ExtResource("6_2hhg3")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.002161, 0, 0.000105679035)
 
-[node name="Skeleton3D" parent="camel_man_no_tent/Camel_Rig" parent_id_path=PackedInt32Array(1318453160, 425494141) index="2" unique_id=1372172112]
+[node name="Skeleton3D" parent="camel_man_no_tent/Camel_Rig" parent_id_path=PackedInt32Array(1318453160, 481255512) index="2" unique_id=1260673787]
 bones/1/position = Vector3(-0.59499997, 0.13999999, -0.36499998)
 bones/1/rotation = Quaternion(-0.5, 0.50000006, 0.50000006, 0.49999994)
 bones/2/position = Vector3(-1.6199999, 0.84999996, -0.32000002)
@@ -2053,17 +2054,17 @@ bones/45/rotation = Quaternion(0.08653587, -6.194813e-08, 2.20221e-08, 0.9962488
 bones/46/rotation = Quaternion(0.50369185, -0.4371293, 0.6816997, -0.30082917)
 bones/47/rotation = Quaternion(0.010436554, -0.15494305, 0.16792272, 0.97349155)
 
-[node name="spine" parent="camel_man_no_tent/Camel_Rig/Skeleton3D" index="0" unique_id=21447498]
+[node name="spine" parent="camel_man_no_tent/Camel_Rig/Skeleton3D" index="0" unique_id=1433729113]
 transform = Transform3D(0.04759369, -0.96033156, 0.27508324, 0.2109097, 0.2785414, 0.938089, -0.9782949, 0.013330715, 0.2156245, -5.9604645e-08, 1.9521742, -7.380923e-08)
 
-[node name="camel_reins_002" parent="camel_man_no_tent/Camel_Rig/Skeleton3D" index="2" unique_id=214234049]
+[node name="camel_reins_002" parent="camel_man_no_tent/Camel_Rig/Skeleton3D" index="2" unique_id=1063903915]
 blend_shapes/left_loose = 1.0
 blend_shapes/right_loose = 1.0
 
-[node name="man_root" parent="camel_man_no_tent" index="1" unique_id=975350551]
+[node name="man_root" parent="camel_man_no_tent" index="1" unique_id=883517749]
 visible = false
 
-[node name="Skeleton3D" parent="camel_man_no_tent/man_root/Rider_Placement/Character_Rig" parent_id_path=PackedInt32Array(1318453160, 982373900) index="0" unique_id=238656542]
+[node name="Skeleton3D" parent="camel_man_no_tent/man_root/Rider_Placement/Character_Rig" parent_id_path=PackedInt32Array(1318453160, 1677833890) index="0" unique_id=188430333]
 bones/9/rotation = Quaternion(-0.43106008, -0.46737245, 0.3694962, 0.6776598)
 bones/10/rotation = Quaternion(-0.0055475896, -0.02386897, 0.023222087, 0.99943006)
 bones/11/rotation = Quaternion(-0.010966895, -0.0956285, 0.095444895, 0.99077004)
@@ -2074,10 +2075,10 @@ bones/26/rotation = Quaternion(0.9983422, 0.037710793, 0.037719112, -0.021634497
 bones/42/rotation = Quaternion(0.9986179, 0.036261663, 0.036264487, -0.011505294)
 bones/45/rotation = Quaternion(0.9986179, -0.03626165, -0.036264554, -0.011505286)
 
-[node name="hand_L" parent="camel_man_no_tent/man_root/Rider_Placement/Character_Rig/Skeleton3D" index="0" unique_id=1421625153]
+[node name="hand_L" parent="camel_man_no_tent/man_root/Rider_Placement/Character_Rig/Skeleton3D" index="0" unique_id=1620705491]
 transform = Transform3D(0.9996696, 0.018179335, 0.018175751, 0.018176408, -0.9998346, 0.0003308095, 0.018178701, -4.7683716e-07, -0.99983466, 0.16300017, 0.49000022, -1.3278684e-07)
 
-[node name="hand_R" parent="camel_man_no_tent/man_root/Rider_Placement/Character_Rig/Skeleton3D" index="1" unique_id=434387871]
+[node name="hand_R" parent="camel_man_no_tent/man_root/Rider_Placement/Character_Rig/Skeleton3D" index="1" unique_id=531549714]
 transform = Transform3D(0.9996692, -0.018179096, -0.018175423, -0.018176079, -0.99983436, 0.00033078343, -0.018178463, -4.0233135e-07, -0.9998347, -0.16300006, 0.49000013, -1.1902617e-07)
 
 [editable path="Man"]

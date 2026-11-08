@@ -1,6 +1,7 @@
 extends Node3D
 
 signal conversation_finished(conversation: String)
+signal p4_first_woman_text_finished
 
 @export var debug_mode := true
 @export var man_offset := Vector3(2.5, 3.0, 0.0)
@@ -103,10 +104,15 @@ func _begin_typing() -> void:
 	var text: String = _texts[_label]
 	_tween = create_tween()
 	_tween.tween_method(_reveal_text, 0, text.length(), text.length() / 35.0)
-	_tween.tween_callback(func(): _typing = false)
+	_tween.tween_callback(_finish_typing)
 
 func _reveal_text(count: int) -> void:
 	_label.text = String(_texts[_label]).left(count)
+
+func _finish_typing() -> void:
+	_typing = false
+	if _current_conversation == "P4" and _label == get_node("women/P4/1"):
+		p4_first_woman_text_finished.emit()
 
 func _advance() -> void:
 	if _transitioning or _label == null:
@@ -114,7 +120,7 @@ func _advance() -> void:
 	if _typing:
 		_tween.kill()
 		_label.text = _texts[_label]
-		_typing = false
+		_finish_typing()
 		return
 	_transitioning = true
 	_tween = create_tween()
