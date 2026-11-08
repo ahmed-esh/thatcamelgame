@@ -83,7 +83,7 @@ visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13633479, 0.16781223, 0.7367867)
 visible = false
 modulate = Color(0, 0, 0, 1)
-text = "Those are Wadan, 
+text = "Those are Waddan, 
 aren't they?"
 font = ExtResource("2_cd8ll")
 font_size = 170
@@ -164,7 +164,7 @@ visible = false
 [node name="1" type="Label3D" parent="man/P5" unique_id=589761670]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13633479, 0.16781223, 0.7367867)
 modulate = Color(0, 0, 0, 1)
-text = "You don't need me to find a Wadan."
+text = "You don't need me to find a Waddan."
 font = ExtResource("2_cd8ll")
 font_size = 115
 
@@ -299,7 +299,7 @@ font_size = 130
 transform = Transform3D(-0.99999994, 0, 0, 0, 1, 0, 0, 0, 1, -0.05606401, 0.16781223, 0.7367867)
 visible = false
 modulate = Color(0, 0, 0, 1)
-text = "We Wadan have 
+text = "We Waddan have 
 always known magic.
 "
 font = ExtResource("2_cd8ll")

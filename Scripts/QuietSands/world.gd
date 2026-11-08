@@ -109,6 +109,7 @@ func _setup_paintings_and_water() -> void:
 				_painting_triggers[i] = trigger
 	var manager: Node = get_node("Dialouge manger")
 	manager.connect("conversation_finished", Callable(self, "_on_painting_finished"))
+	manager.connect("p4_first_woman_text_finished", Callable(self, "_on_p4_first_woman_text_finished"))
 	var water_scene: PackedScene = load("res://Scenes/BoxColliderToGetWater.tscn")
 	_water_interaction = water_scene.instantiate() as Area3D
 	oasis.add_child(_water_interaction)
@@ -122,7 +123,7 @@ func _setup_paintings_and_water() -> void:
 		8.0,
 		water_bounds.size.z * absf(water_mesh.scale.z)
 	)
-	box.size = oasis_size * 0.7
+	box.size = oasis_size * 0.64
 	shape_node.position = water_mesh.transform * water_bounds.get_center()
 	shape_node.rotation = water_mesh.rotation
 	shape_node.shape = box
@@ -240,17 +241,18 @@ func _update_interaction_prompt() -> void:
 func _check_paintings() -> void:
 	if not Global.game_started or Global.in_cutscene or Global.dialogue_active or not _oasis_dialogue_finished or _active_painting != 0:
 		return
-	if not _painting_sprites.has(_next_painting):
+	for id in range(1, 5):
+		if _painting_seen.has(id) or not _painting_sprites.has(id):
+			continue
+		if id == 4 and not (_painting_seen.has(1) and _painting_seen.has(2) and _painting_seen.has(3)):
+			continue
+		var trigger := _painting_triggers.get(id) as Area3D
+		if trigger == null or (not trigger.overlaps_body($Player) and not trigger.overlaps_body(camel)):
+			continue
+		_active_painting = id
+		_play_interaction_audio("res://sounds/interaction1.mp3", _painting_sprites[id].global_position)
+		get_node("Dialouge manger").call("p%d" % id)
 		return
-	var painting: Sprite3D = _painting_sprites[_next_painting]
-	var trigger := _painting_triggers.get(_next_painting) as Area3D
-	if trigger == null:
-		return
-	if not trigger.overlaps_body($Player) and not trigger.overlaps_body(camel):
-		return
-	_active_painting = _next_painting
-	_play_interaction_audio("res://sounds/interaction1.mp3", painting.global_position)
-	get_node("Dialouge manger").call("p%d" % _active_painting)
 
 func _check_return_to_camel() -> void:
 	if _oasis_dialogue_played or not Global.got_water or Global.in_cutscene or Global.dialogue_active:
@@ -264,6 +266,10 @@ func _check_return_to_camel() -> void:
 		_oasis_dialogue_played = true
 		get_node("Dialouge manger").call("oasis")
 
+func _on_p4_first_woman_text_finished() -> void:
+	if _active_painting == 4 and _painting_sprites.has(4):
+		_painting_sprites[4].call("play_animation")
+
 func _on_painting_finished(conversation: String) -> void:
 	if conversation == "Oasis":
 		_oasis_dialogue_finished = true
@@ -274,10 +280,24 @@ func _on_painting_finished(conversation: String) -> void:
 	var id := _active_painting
 	_active_painting = 0
 	_painting_seen[id] = true
-	_next_painting = id + 1
+	_next_painting = 0
+	for next_id in range(1, 4):
+		if not _painting_seen.has(next_id):
+			_next_painting = next_id
+			break
+	if _next_painting == 0 and not _painting_seen.has(4):
+		_next_painting = 4
 	_glow_painting(_painting_sprites[id])
 	_update_waypoint_position()
-	if _painting_seen.has(1) and _painting_seen.has(2) and _painting_seen.has(3) and not _coverup_revealed:
+	if id == 4:
+		Global.in_cutscene = true
+		await get_tree().create_timer(5.0).timeout
+		var final_scene := load("res://finalCutscene.tscn").instantiate() as Node3D
+		add_child(final_scene)
+		final_scene.global_position = Vector3(-296.28, 3.897, 430.637)
+		(final_scene.get_node("Camera3D") as Camera3D).make_current()
+		(final_scene.get_node("AnimationPlayer") as AnimationPlayer).play("cutscene")
+	elif _painting_seen.has(1) and _painting_seen.has(2) and _painting_seen.has(3) and not _coverup_revealed:
 		_coverup_revealed = true
 		Global.in_cutscene = true
 		await _sink_coverup()

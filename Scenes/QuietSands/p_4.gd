@@ -10,6 +10,9 @@ extends Sprite3D
 @export var pause_duration: float = 0.8
 @export var fade_duration: float = 2.0
 
+@export_group("Debug")
+@export var enable_p_debug: bool = false
+
 @onready var first_photo: Sprite3D = $P44
 @onready var planes: Sprite3D = $planes
 @onready var people_dying: Sprite3D = $peopledying
@@ -31,6 +34,27 @@ func _ready() -> void:
 
 	planes.visible = true
 	people_dying.visible = true
+
+
+func _input(event: InputEvent) -> void:
+	if not enable_p_debug:
+		return
+
+	if not event is InputEventKey:
+		return
+
+	if not event.pressed or event.echo or event.keycode != KEY_P:
+		return
+
+	if _is_playing:
+		return
+
+	if _finished:
+		_finished = false
+		first_photo.modulate.a = 1.0
+		people_dying.modulate.a = 0.0
+
+	play_animation()
 
 
 func play_animation() -> void:

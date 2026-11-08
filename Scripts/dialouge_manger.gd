@@ -1,6 +1,8 @@
+
 extends Node3D
 
 signal conversation_finished(conversation: String)
+signal p4_first_woman_text_finished
 
 @export var debug_mode := true
 @export var man_offset := Vector3(2.5, 3.0, 0.0)
@@ -104,7 +106,12 @@ func _begin_typing() -> void:
 	var text: String = _texts[_label]
 	_tween = create_tween()
 	_tween.tween_method(_reveal_text, 0, text.length(), text.length() / 35.0)
-	_tween.tween_callback(func(): _typing = false)
+	_tween.tween_callback(_finish_typing)
+
+func _finish_typing() -> void:
+	_typing = false
+	if _current_conversation == "P4" and _label == get_node_or_null("women/P4/1"):
+		p4_first_woman_text_finished.emit()
 
 func _reveal_text(count: int) -> void:
 	_label.text = String(_texts[_label]).left(count)
@@ -115,7 +122,7 @@ func _advance() -> void:
 	if _typing:
 		_tween.kill()
 		_label.text = _texts[_label]
-		_typing = false
+		_finish_typing()
 		return
 	_transitioning = true
 	_tween = create_tween()
@@ -148,7 +155,6 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		_advance()
 
-
 func _process(_delta: float) -> void:
 	var mounted := Global.camel != null and (Global.camel.is_active or Global.camel.is_transitioning)
 	var target: Node3D = Global.camel if mounted else Global.player
@@ -162,13 +168,11 @@ func _process(_delta: float) -> void:
 	global_position = target.global_position
 	global_basis = camera_basis.scaled(_world_scale)
 
-
 	var man_pos := man_offset
 	if mounted:
 		man_pos.y += mounted_height
 
 	$man.global_position = target.global_position + camera_basis * man_pos
-
 
 	var woman_target: Node3D = women_anchor if women_anchor != null else target
 	$women.global_position = woman_target.global_position + camera_basis * women_offset
