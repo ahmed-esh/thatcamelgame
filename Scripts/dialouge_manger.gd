@@ -146,8 +146,15 @@ func _finish_line() -> void:
 		_show_line()
 
 func _input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed and _label != null:
+			get_viewport().set_input_as_handled()
+			_advance()
+		return
+
 	if not event is InputEventKey or not event.pressed or event.echo:
 		return
+
 	if debug_mode and event.keycode >= KEY_1 and event.keycode <= KEY_6:
 		get_viewport().set_input_as_handled()
 		call(["oasis", "p1", "p2", "p3", "p4", "p5"][event.keycode - KEY_1])
