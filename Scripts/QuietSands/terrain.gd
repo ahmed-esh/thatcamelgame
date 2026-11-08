@@ -37,6 +37,7 @@ var local_material: ShaderMaterial
 var active: Dictionary = {}
 var history: Dictionary = {}
 var cell := Vector2i(9999,9999)
+var companion_cell := Vector2i(9999,9999)
 var indices := PackedInt32Array()
 var clock := 0.0
 var settle_clock := 0.0
@@ -206,18 +207,26 @@ func _build_distant(cx: int, cz: int) -> void:
 	instance.name = "Dunes_%s_%s" % [cx,cz]
 	add_child(instance)
 
-func follow(p: Vector3) -> void:
-	var next := Vector2i(floori(p.x / TILE),floori(p.z / TILE))
-	if next == cell:
+func follow(p: Vector3, companion: Node3D = null) -> void:
+	var next := Vector2i(floori(p.x / TILE), floori(p.z / TILE))
+	var next_companion := Vector2i(9999, 9999)
+	if companion != null:
+		var q: Vector3 = companion.global_position
+		next_companion = Vector2i(floori(q.x / TILE), floori(q.z / TILE))
+	if next == cell and next_companion == companion_cell:
 		return
 	cell = next
+	companion_cell = next_companion
 	var wanted: Dictionary = {}
-	for z in range(cell.y-1,cell.y+2):
-		for x in range(cell.x-1,cell.x+2):
-			var key := Vector2i(x,z)
-			wanted[key] = true
-			if not active.has(key):
-				_create_patch(key)
+	for center in [cell, companion_cell]:
+		if center == Vector2i(9999, 9999):
+			continue
+		for z in range(center.y - 1, center.y + 2):
+			for x in range(center.x - 1, center.x + 2):
+				var key := Vector2i(x, z)
+				wanted[key] = true
+				if not active.has(key):
+					_create_patch(key)
 	for key in active.keys():
 		if not wanted.has(key):
 			active[key].node.queue_free()

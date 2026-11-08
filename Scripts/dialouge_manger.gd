@@ -1,5 +1,7 @@
 extends Node3D
 
+signal conversation_finished(conversation: String)
+
 @export var debug_mode := true
 @export var man_offset := Vector3(2.5, 3.0, 0.0)
 @export var women_offset := Vector3(-2.5, 3.0, 0.0)
@@ -16,6 +18,7 @@ var _tween: Tween
 var _typing := false
 var _transitioning := false
 var _world_scale: Vector3
+var _current_conversation := ""
 
 func _ready() -> void:
 	_world_scale = global_basis.get_scale()
@@ -62,7 +65,10 @@ func _reset() -> void:
 				label.text = _texts[label]
 
 func _start(conversation: String) -> void:
+	if _label != null:
+		return
 	_reset()
+	_current_conversation = conversation
 	for graphic: Sprite3D in [$man, $women]:
 		for label: Label3D in graphic.get_node(conversation).get_children():
 			_lines.append(label)
@@ -123,7 +129,10 @@ func _finish_line() -> void:
 	_graphic.scale = _scales[_graphic]
 	_line_index += 1
 	if _line_index == _lines.size():
+		var finished := _current_conversation
 		_reset()
+		_current_conversation = ""
+		conversation_finished.emit(finished)
 	else:
 		_show_line()
 

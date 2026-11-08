@@ -36,6 +36,10 @@ extends CharacterBody3D
 ## If true, movement input is ignored while sliding or carrying slide momentum (camera look still works).
 @export var lock_input_while_sliding : bool = true
 
+@export_group("Follow")
+@export var follow_start_distance: float = 10.0
+@export var follow_stop_distance: float = 4.0
+
 @export_group("Visuals")
 ## How quickly the camel's visuals lerp to match the ground normal (higher = snappier).
 @export var ground_align_speed : float = 8.0
@@ -82,6 +86,7 @@ var _slide_velocity : Vector3 = Vector3.ZERO  # horizontal momentum from sliding
 var _is_sliding : bool = false
 var _pushing_uphill : bool = false
 var _default_snap_length : float
+var _following_player := false
 var _visual_yaw : float = 0.0
 var _visual_up : Vector3 = Vector3.UP        # what the model is currently using as "up" (smoothed)
 var _aligned_normal : Vector3 = Vector3.UP   # last ground normal the visuals committed to
@@ -91,6 +96,7 @@ const HOOF_BONES := ["front_L_foot", "rear_R_foot", "front_R_foot", "rear_L_foot
 
 
 func _ready() -> void:
+	floor_max_angle = deg_to_rad(65.0)
 	_default_snap_length = floor_snap_length
 	_visual_yaw = visuals.global_rotation.y
 	animation_tree.advance_expression_base_node = self.get_path()
@@ -194,85 +200,91 @@ func _update_slide(delta: float) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	# deactivate the man in the game. 
-	if (!is_active && !is_transitioning):
+	if not is_active and not is_transitioning:
 		$VisualContainer/camel_man/man_root.visible = false
-	if (!is_active && is_transitioning):
+	if not is_active and is_transitioning:
 		$VisualContainer/camel_man/man_root.visible = true
-		pass
 
-	if (!is_active): 
+	if not is_active and not is_transitioning and Global.player != null and Global.player.is_active and not Global.in_cutscene:
+		var gap := Vector2(Global.player.global_position.x - global_position.x, Global.player.global_position.z - global_position.z).length()
+		if gap > follow_start_distance:
+			_following_player = true
+		elif gap < follow_stop_distance:
+			_following_player = false
+	else:
+		_following_player = false
+
+	if not is_active and not _following_player and _slide_velocity.length() < 0.2 and Vector2(velocity.x, velocity.z).length() < 0.2:
+		return
+	if is_transitioning and not is_active:
 		return
 
-	# Heavy gravity while sliding (even on the floor) keeps the camel pressed down.
 	var slide_active := _is_slide_active()
 	if not is_on_floor() or slide_active:
 		var gravity_scale := slide_gravity_multiplier if slide_active else 1.0
 		velocity += get_gravity() * gravity_scale * delta
 
-	## Handle jump.
-	#if Input.is_action_just_pressed("ui_accept") and is_on_floor():
-		#velocity.y = JUMP_VELOCITY
-	var input_dir := Input.get_vector("Left", "Right", "Up", "Down")
-	var cam_basis: Basis = get_viewport().get_camera_3d().global_basis
-	var forward := -cam_basis.z
-	forward.y = 0
-	forward = forward.normalized()
+	var input_dir := Vector2.ZERO
+	var direction := Vector3.ZERO
+	if is_active:
+		if not Global.in_cutscene:
+			input_dir = Input.get_vector("Left", "Right", "Up", "Down")
+		var cam_basis: Basis = get_viewport().get_camera_3d().global_basis
+		var forward := -cam_basis.z
+		forward.y = 0
+		forward = forward.normalized()
+		var right := cam_basis.x
+		right.y = 0
+		right = right.normalized()
+		direction = (right * input_dir.x + forward * -input_dir.y).normalized()
+	elif _following_player:
+		direction = Global.player.global_position - global_position
+		direction.y = 0
+		direction = direction.normalized()
 
-	var right := cam_basis.x
-	right.y = 0
-	right = right.normalized()
-
-	# input_dir.y is negative when pressing Up, so negate it to move along forward.
-	var direction := (right * input_dir.x + forward * -input_dir.y).normalized()
-
-	# Is the player steering up a steep slope? Checked on the raw input, before any lock.
 	_pushing_uphill = _is_pushing_uphill(direction)
-
-	# No steering or accelerating while sliding, including while still carrying slide momentum
-	# (on flat ground or mid-bounce) - except when deliberately pushing uphill.
 	if lock_input_while_sliding and _is_slide_active():
 		input_dir = Vector2.ZERO
 		direction = Vector3.ZERO
-	if (input_dir.y != 0): is_accelerating = true
-	else: is_accelerating = false
-	var turn_dir = input_dir.x
+	is_accelerating = direction.length() > 0.2
 
-	# Strip last frame's slide velocity so input logic only works on walking velocity.
 	velocity.x -= _slide_velocity.x
 	velocity.z -= _slide_velocity.z
-	
-	if direction:
+	if direction.length() > 0.01:
 		velocity.x = move_toward(velocity.x, max_speed * direction.x, acceleration * delta)
 		velocity.z = move_toward(velocity.z, max_speed * direction.z, acceleration * delta)
-		
-		## check if the direction is completely 180
-		if (direction.dot(velocity) < 0): 
+		if direction.dot(velocity) < 0:
 			velocity.x = 0
 			velocity.z = 0
 	else:
 		velocity.x = move_toward(velocity.x, 0, deceleration * delta)
 		velocity.z = move_toward(velocity.z, 0, deceleration * delta)
-	
-	# Update slide momentum and add it back on top of walking velocity.
+
 	_update_slide(delta)
 	velocity.x += _slide_velocity.x
 	velocity.z += _slide_velocity.z
-	
-	# A longer snap distance while sliding makes the body follow the terrain downward.
-	floor_snap_length = slide_snap_length if _is_slide_active() else _default_snap_length
-	
+	var sliding_now := _is_slide_active()
+	floor_snap_length = maxf(slide_snap_length, 3.0) if sliding_now else _default_snap_length
+	if sliding_now and is_on_floor():
+		var n := get_floor_normal()
+		var descent := -(n.x * velocity.x + n.z * velocity.z) / maxf(n.y, 0.15)
+		velocity.y = minf(velocity.y, descent - 1.5)
+	var was_grounded := is_on_floor()
 	move_and_slide()
+	if sliding_now and was_grounded and not is_on_floor():
+		apply_floor_snap()
+	if sliding_now and is_on_floor():
+		var terrain := get_node_or_null("../SculptedDesert")
+		if terrain != null:
+			var point := global_position
+			point.y = terrain.base_height(point.x, point.z)
+			terrain.drag_sand(point, velocity, clampf(_slide_velocity.length() / max_slide_speed, 0.25, 1.0))
 
-	# If we hit a wall, the engine reduced our real velocity; clamp slide momentum
-	# to it so we don't keep phantom momentum after crashing into something.
 	var horizontal_real := Vector3(velocity.x, 0, velocity.z)
 	if _slide_velocity.length() > horizontal_real.length():
 		_slide_velocity = _slide_velocity.limit_length(horizontal_real.length())
-	
-	if (direction.length() > 0.2):
+	if direction.length() > 0.2:
 		_prev_dir = direction
-	
 	_update_slide_animation(delta)
 	_update_visuals(delta)
 	_update_hoofprints(delta)
@@ -382,6 +394,7 @@ func on_dismount(anim_name):
 	Global.player.is_active = true
 	is_transitioning = false
 	Global.is_camel = false
+	state_machine.start(RIDE_IDLE_STATE)
 	animation_tree.animation_finished.disconnect(on_dismount)
 
 func on_mount(anim_name):

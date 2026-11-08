@@ -10,14 +10,31 @@ var environment: WorldEnvironment
 var oasis: Node3D
 var landmarks: Node3D
 var ready_to_explore := false
+var _painting_sprites: Dictionary = {}
+var _painting_seen: Dictionary = {}
+var _active_painting := 0
+var _coverup_revealed := false
+var _water_prompt_bound := false
+var _prompt_mode := ""
+var _camel_hint_finished := false
+var _water_interaction: Area3D
+var _interaction_audio: AudioStreamPlayer3D
+var _oasis_dialogue_played := false
+var _left_camel_after_water := false
 
 func _physics_process(_delta: float) -> void:
 	if camel != null:
 		traveler = camel if camel.is_active or camel.is_transitioning else $Player
-		terrain.follow(traveler.global_position)
+		var companion: Node3D = camel if not camel.is_active and not camel.is_transitioning and Global.game_started else null
+		terrain.follow(traveler.global_position, companion)
 		oasis.traveler = traveler
+		_check_paintings()
+		_check_return_to_camel()
+		_update_interaction_prompt()
 
 func _process(_delta: float) -> void:
+	if Global.game_started and not _water_prompt_bound and _water_interaction != null and Global.main_camera != null:
+		_bind_water_prompt()
 	if environment == null:
 		return
 	var view := get_viewport().get_camera_3d()
@@ -39,6 +56,7 @@ func _ready() -> void:
 		oasis.traveler = traveler
 		terrain.follow(traveler.position)
 		ready_to_explore = true
+		_setup_paintings_and_water()
 		super._ready()
 		return
 	_build_atmosphere()
@@ -62,6 +80,180 @@ func _ready() -> void:
 	_build_audio()
 	ready_to_explore = true
 	print("QUIET_SANDS_READY terrain=2048x2048 relief=",terrain.maximum-terrain.minimum," palms=13 ruins=6 outcrops=15 renderer=",RenderingServer.get_current_rendering_method())
+
+
+func _setup_paintings_and_water() -> void:
+	for i in range(1, 5):
+		var painting := get_node_or_null("painintgs/P%d" % i) as Sprite3D
+		if painting != null:
+			_painting_sprites[i] = painting
+	var manager: Node = get_node("Dialouge manger")
+	manager.connect("conversation_finished", Callable(self, "_on_painting_finished"))
+	var water_scene: PackedScene = load("res://Scenes/BoxColliderToGetWater.tscn")
+	_water_interaction = water_scene.instantiate() as Area3D
+	oasis.add_child(_water_interaction)
+	_water_interaction.position = Vector3.ZERO
+	var shape_node := _water_interaction.get_node("CollisionShape3D") as CollisionShape3D
+	var box := BoxShape3D.new()
+	var water_mesh := $Landmarks/Oasis/DreamingWater as MeshInstance3D
+	var water_bounds := water_mesh.get_aabb()
+
+	box.size = Vector3(
+		water_bounds.size.x * absf(water_mesh.scale.x),
+		8.0,
+		water_bounds.size.z * absf(water_mesh.scale.z)
+		)
+
+	shape_node.position = water_mesh.transform * water_bounds.get_center()
+	shape_node.rotation = water_mesh.rotation
+	shape_node.shape = box
+	_interaction_audio = AudioStreamPlayer3D.new()
+	_interaction_audio.volume_db = -2
+	add_child(_interaction_audio)
+
+func _bind_water_prompt() -> void:
+	var prompt: Label3D = dialogue_label
+	if prompt == null:
+		return
+	prompt.reparent(Global.main_camera, false)
+	prompt.position = Vector3(0.0, -0.75, -2.4)
+	prompt.rotation = Vector3.ZERO
+	prompt.scale = Vector3.ONE
+	prompt.pixel_size = 0.003
+	prompt.font_size = 46
+	prompt.no_depth_test = true
+	prompt.text = ""
+	prompt.hide()
+	_water_interaction.call("set_prompt", prompt)
+	_water_prompt_bound = true
+
+func _update_interaction_prompt() -> void:
+	if not _water_prompt_bound or Global.player == null:
+		return
+	if Global.is_camel or camel.is_transitioning:
+		_camel_hint_finished = true
+	var mode := ""
+	if Global.game_started and not Global.in_cutscene and Global.player.is_active:
+		if Global.can_get_water and not Global.got_water:
+			mode = "water"
+		elif not _camel_hint_finished and Global.player.area_3d.overlaps_body(camel):
+			mode = "camel"
+	if mode == _prompt_mode:
+		return
+	_prompt_mode = mode
+	if mode == "water":
+		_water_interaction.call("show_prompt", "Press E to get water")
+	elif mode == "camel":
+		_water_interaction.call("show_prompt", "Press E to get on the camel")
+	else:
+		_water_interaction.call("hide_prompt", true)
+
+func _check_paintings() -> void:
+	if not Global.game_started or Global.in_cutscene or _active_painting != 0:
+		return
+	if traveler == null:
+		return
+	for id in range(1, 5):
+		if _painting_seen.has(id) or not _painting_sprites.has(id):
+			continue
+		var painting: Sprite3D = _painting_sprites[id]
+		var distance := Vector2(traveler.global_position.x, traveler.global_position.z).distance_to(Vector2(painting.global_position.x, painting.global_position.z))
+		if distance > 7.0:
+			continue
+		_active_painting = id
+		Global.in_cutscene = true
+		_play_interaction_audio("res://sounds/interaction1.mp3", painting.global_position)
+		get_node("Dialouge manger").call("p%d" % id)
+		return
+
+func _check_return_to_camel() -> void:
+	if _oasis_dialogue_played or not Global.got_water or Global.in_cutscene:
+		return
+	if camel.is_active or camel.is_transitioning or not Global.player.is_active:
+		return
+	var near_camel := Global.player.area_3d.overlaps_body(camel)
+	if not near_camel:
+		_left_camel_after_water = true
+	elif _left_camel_after_water:
+		_oasis_dialogue_played = true
+		Global.in_cutscene = true
+		get_node("Dialouge manger").call("oasis")
+
+func _on_painting_finished(conversation: String) -> void:
+	if conversation == "Oasis":
+		Global.in_cutscene = false
+		return
+	if not conversation.begins_with("P") or _active_painting == 0:
+		return
+	var id := _active_painting
+	_active_painting = 0
+	_painting_seen[id] = true
+	_glow_painting(_painting_sprites[id])
+	if _painting_seen.has(1) and _painting_seen.has(2) and _painting_seen.has(3) and not _coverup_revealed:
+		_coverup_revealed = true
+		await _sink_coverup()
+	else:
+		Global.in_cutscene = false
+
+func _glow_painting(painting: Sprite3D) -> void:
+	var original_scale := painting.scale
+	var tween := create_tween()
+	tween.tween_property(painting, "modulate", Color(1.65, 1.4, 1.9), 0.55).set_trans(Tween.TRANS_SINE)
+	tween.parallel().tween_property(painting, "scale", original_scale * 1.1, 0.55).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(painting, "modulate", Color(1.18, 1.12, 1.32), 0.85).set_trans(Tween.TRANS_SINE)
+	tween.parallel().tween_property(painting, "scale", original_scale, 0.85)
+
+func _play_interaction_audio(path: String, location: Vector3) -> void:
+	if _interaction_audio == null:
+		return
+	_interaction_audio.stream = load(path)
+	_interaction_audio.global_position = location
+	_interaction_audio.play()
+
+func _sink_coverup() -> void:
+	var coverup: Node3D = $Landmarks/coverup
+	var center := Vector3.ZERO
+	var spires: Array[MeshInstance3D] = []
+	for child in coverup.get_children():
+		if child is MeshInstance3D:
+			spires.append(child)
+			center += child.global_position
+	if spires.is_empty():
+		Global.in_cutscene = false
+		return
+	center /= float(spires.size())
+	var radius := 0.0
+	for spire in spires:
+		radius = maxf(radius, Vector2(spire.global_position.x, spire.global_position.z).distance_to(Vector2(center.x, center.z)))
+	var distance := maxf(30.0, radius * 2.0)
+	var shot := Node3D.new()
+	shot.name = "CoverupCameraTarget"
+	add_child(shot)
+	shot.global_position = center + Vector3(distance * 0.55, maxf(20.0, radius * 0.7), distance)
+	shot.look_at(center + Vector3(0.0, 3.0, 0.0), Vector3.UP)
+	await Global.main_camera.lerp_to_new(shot)
+	_play_interaction_audio("res://sounds/interaction3.mp3", center)
+	var start := coverup.position
+	var motion := create_tween().set_parallel(true)
+	motion.tween_property(coverup, "position:y", -122.131, 4.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	motion.tween_method(Callable(self, "_shake_coverup").bind(coverup, start), 0.0, 1.0, 4.2)
+	for i in range(16):
+		var spire: MeshInstance3D = spires[i % spires.size()]
+		terrain.call("_sand_burst", spire.global_position, Vector3(0.7, 0.0, 0.4), 1.6, true)
+		await get_tree().create_timer(0.26).timeout
+	if motion.is_running():
+		await motion.finished
+	coverup.position.x = start.x
+	coverup.position.z = start.z
+	var follow_target: Node3D = Global.camel_camera_node if Global.is_camel else Global.player_camera_node
+	await Global.main_camera.lerp_to_new(follow_target)
+	shot.queue_free()
+	Global.in_cutscene = false
+
+func _shake_coverup(t: float, coverup: Node3D, start: Vector3) -> void:
+	var intensity := sin(t * PI) * 0.22
+	coverup.position.x = start.x + sin(t * 115.0) * intensity
+	coverup.position.z = start.z + cos(t * 137.0) * intensity
 
 func _setup_input() -> void:
 	var bindings := {"forward":[KEY_W,KEY_UP],"back":[KEY_S,KEY_DOWN],"left":[KEY_A,KEY_LEFT],"right":[KEY_D,KEY_RIGHT],"run":[KEY_SHIFT],"jump":[KEY_SPACE],"slide":[KEY_CTRL,KEY_C]}
