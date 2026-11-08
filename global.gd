@@ -13,3 +13,5 @@ var game_started : bool
 var can_get_water : bool
 var got_water : bool
 var in_cutscene : bool
+
+var dialogue_active: bool = false

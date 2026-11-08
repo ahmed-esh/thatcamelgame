@@ -20,7 +20,13 @@ var _camel_hint_finished := false
 var _water_interaction: Area3D
 var _interaction_audio: AudioStreamPlayer3D
 var _oasis_dialogue_played := false
+var _oasis_dialogue_finished := false
 var _left_camel_after_water := false
+var _next_painting := 1
+var _dismount_area: Area3D
+var _waypoint: Node3D
+var _waypoint_star: Sprite3D
+var _waypoint_particles: GPUParticles3D
 
 func _physics_process(_delta: float) -> void:
 	if camel != null:
@@ -31,6 +37,7 @@ func _physics_process(_delta: float) -> void:
 		_check_paintings()
 		_check_return_to_camel()
 		_update_interaction_prompt()
+		_update_waypoint_position()
 
 func _process(_delta: float) -> void:
 	if Global.game_started and not _water_prompt_bound and _water_interaction != null and Global.main_camera != null:
@@ -57,6 +64,7 @@ func _ready() -> void:
 		terrain.follow(traveler.position)
 		ready_to_explore = true
 		_setup_paintings_and_water()
+		_setup_waypoint()
 		super._ready()
 		return
 	_build_atmosphere()
@@ -89,7 +97,6 @@ func _setup_paintings_and_water() -> void:
 			_painting_sprites[i] = painting
 	var manager: Node = get_node("Dialouge manger")
 	manager.connect("conversation_finished", Callable(self, "_on_painting_finished"))
-	manager.connect("p4_first_woman_text_finished", Callable(self, "_on_p4_first_woman_text_finished"))
 	var water_scene: PackedScene = load("res://Scenes/BoxColliderToGetWater.tscn")
 	_water_interaction = water_scene.instantiate() as Area3D
 	oasis.add_child(_water_interaction)
@@ -98,19 +105,116 @@ func _setup_paintings_and_water() -> void:
 	var box := BoxShape3D.new()
 	var water_mesh := $Landmarks/Oasis/DreamingWater as MeshInstance3D
 	var water_bounds := water_mesh.get_aabb()
-
-	box.size = Vector3(
+	var oasis_size := Vector3(
 		water_bounds.size.x * absf(water_mesh.scale.x),
 		8.0,
 		water_bounds.size.z * absf(water_mesh.scale.z)
-		)
-
+	)
+	box.size = oasis_size * 0.9
 	shape_node.position = water_mesh.transform * water_bounds.get_center()
 	shape_node.rotation = water_mesh.rotation
 	shape_node.shape = box
+	_dismount_area = Area3D.new()
+	_dismount_area.name = "OasisDismountArea"
+	_dismount_area.collision_layer = 0
+	_dismount_area.collision_mask = _water_interaction.collision_mask
+	oasis.add_child(_dismount_area)
+	var outer_shape := CollisionShape3D.new()
+	var outer_box := BoxShape3D.new()
+	outer_box.size = oasis_size
+	outer_shape.shape = outer_box
+	outer_shape.position = shape_node.position
+	outer_shape.rotation = shape_node.rotation
+	_dismount_area.add_child(outer_shape)
 	_interaction_audio = AudioStreamPlayer3D.new()
 	_interaction_audio.volume_db = -2
 	add_child(_interaction_audio)
+
+func _make_waypoint_texture() -> ImageTexture:
+	var picture := Image.create(64, 64, false, Image.FORMAT_RGBA8)
+	for y in range(64):
+		for x in range(64):
+			var dx := (float(x) - 31.5) / 31.5
+			var dy := (float(y) - 31.5) / 31.5
+			var radius := sqrt(dx * dx + dy * dy)
+			var glow := exp(-radius * 5.0) * 0.55
+			var rays := exp(-absf(dx) * 16.0 - absf(dy) * 2.6) + exp(-absf(dy) * 16.0 - absf(dx) * 2.6)
+			var alpha := clampf(glow + rays * 0.85, 0.0, 1.0) * (1.0 - smoothstep(0.5, 1.0, radius))
+			picture.set_pixel(x, y, Color(0.65, 0.95, 1.0, alpha))
+	return ImageTexture.create_from_image(picture)
+
+func _setup_waypoint() -> void:
+	_waypoint = Node3D.new()
+	_waypoint.name = "DestinationLight"
+	add_child(_waypoint)
+	var texture := _make_waypoint_texture()
+	_waypoint_star = Sprite3D.new()
+	_waypoint_star.texture = texture
+	_waypoint_star.pixel_size = 0.1
+	_waypoint_star.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_waypoint_star.shaded = false
+	_waypoint_star.fixed_size = true
+	_waypoint_star.no_depth_test = true
+	_waypoint_star.modulate = Color(0.85, 0.98, 1.0, 1.0)
+	_waypoint.add_child(_waypoint_star)
+	var bob := create_tween().set_loops()
+	bob.tween_property(_waypoint_star, "position:y", 0.85, 1.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(_waypoint_star, "position:y", 0.0, 1.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_waypoint_particles = GPUParticles3D.new()
+	_waypoint_particles.amount = 64
+	_waypoint_particles.lifetime = 2.4
+	_waypoint_particles.preprocess = 2.4
+	_waypoint_particles.visibility_aabb = AABB(Vector3(-6, -6, -6), Vector3(12, 12, 12))
+	var process := ParticleProcessMaterial.new()
+	process.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	process.emission_sphere_radius = 2.0
+	process.direction = Vector3.UP
+	process.spread = 70.0
+	process.initial_velocity_min = 0.25
+	process.initial_velocity_max = 1.1
+	process.gravity = Vector3(0.0, -0.1, 0.0)
+	process.scale_min = 0.25
+	process.scale_max = 0.7
+	var fade := Gradient.new()
+	fade.set_color(0, Color(0.6, 0.9, 1.0, 0.0))
+	fade.set_color(1, Color(0.6, 0.9, 1.0, 0.0))
+	fade.add_point(0.25, Color(0.6, 0.9, 1.0, 0.8))
+	fade.add_point(0.7, Color(0.6, 0.9, 1.0, 0.55))
+	var ramp := GradientTexture1D.new()
+	ramp.gradient = fade
+	process.color_ramp = ramp
+	_waypoint_particles.process_material = process
+	var quad := QuadMesh.new()
+	quad.size = Vector2(0.7, 0.7)
+	var sparkle := StandardMaterial3D.new()
+	sparkle.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sparkle.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	sparkle.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sparkle.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	sparkle.albedo_texture = texture
+	sparkle.albedo_color = Color(0.8, 0.96, 1.0)
+	sparkle.emission_enabled = true
+	sparkle.emission = Color(0.3, 0.8, 1.0)
+	sparkle.emission_energy_multiplier = 2.0
+	quad.material = sparkle
+	_waypoint_particles.draw_pass_1 = quad
+	_waypoint.add_child(_waypoint_particles)
+	_update_waypoint_position()
+
+func _update_waypoint_position() -> void:
+	if _waypoint == null:
+		return
+	if not Global.game_started or Global.in_cutscene:
+		_waypoint.hide()
+		return
+	var target: Node3D = oasis
+	if _oasis_dialogue_finished:
+		target = _painting_sprites.get(_next_painting) as Node3D
+	if target == null:
+		_waypoint.hide()
+		return
+	_waypoint.show()
+	_waypoint.global_position = target.global_position + Vector3.UP * 9.0
 
 func _bind_water_prompt() -> void:
 	var prompt: Label3D = dialogue_label
@@ -134,41 +238,42 @@ func _update_interaction_prompt() -> void:
 	if Global.is_camel or camel.is_transitioning:
 		_camel_hint_finished = true
 	var mode := ""
-	if Global.game_started and not Global.in_cutscene and Global.player.is_active:
-		if Global.can_get_water and not Global.got_water:
+	if Global.game_started and not Global.in_cutscene and not Global.dialogue_active:
+		if not Global.got_water and Global.is_camel and _dismount_area != null and _dismount_area.overlaps_body(camel):
+			mode = "dismount"
+		elif Global.player.is_active and Global.can_get_water and not Global.got_water:
 			mode = "water"
-		elif not _camel_hint_finished and Global.player.area_3d.overlaps_body(camel):
+		elif Global.player.is_active and not _camel_hint_finished and Global.player.area_3d.overlaps_body(camel):
 			mode = "camel"
 	if mode == _prompt_mode:
 		return
 	_prompt_mode = mode
 	if mode == "water":
 		_water_interaction.call("show_prompt", "Press E to get water")
+	elif mode == "dismount":
+		_water_interaction.call("show_prompt", "Press E to get off the camel")
 	elif mode == "camel":
 		_water_interaction.call("show_prompt", "Press E to get on the camel")
 	else:
 		_water_interaction.call("hide_prompt", true)
 
 func _check_paintings() -> void:
-	if not Global.game_started or Global.in_cutscene or _active_painting != 0:
+	if not Global.game_started or Global.in_cutscene or Global.dialogue_active or not _oasis_dialogue_finished or _active_painting != 0:
 		return
-	if traveler == null:
+	if not _painting_sprites.has(_next_painting):
 		return
-	for id in range(1, 5):
-		if _painting_seen.has(id) or not _painting_sprites.has(id):
-			continue
-		var painting: Sprite3D = _painting_sprites[id]
-		var distance := Vector2(traveler.global_position.x, traveler.global_position.z).distance_to(Vector2(painting.global_position.x, painting.global_position.z))
-		if distance > 7.0:
-			continue
-		_active_painting = id
-		Global.in_cutscene = true
-		_play_interaction_audio("res://sounds/interaction1.mp3", painting.global_position)
-		get_node("Dialouge manger").call("p%d" % id)
+	var painting: Sprite3D = _painting_sprites[_next_painting]
+	var trigger := painting.get_node_or_null("DialogueTrigger") as Area3D
+	if trigger == null:
 		return
+	if not trigger.overlaps_body($Player) and not trigger.overlaps_body(camel):
+		return
+	_active_painting = _next_painting
+	_play_interaction_audio("res://sounds/interaction1.mp3", painting.global_position)
+	get_node("Dialouge manger").call("p%d" % _active_painting)
 
 func _check_return_to_camel() -> void:
-	if _oasis_dialogue_played or not Global.got_water or Global.in_cutscene:
+	if _oasis_dialogue_played or not Global.got_water or Global.in_cutscene or Global.dialogue_active:
 		return
 	if camel.is_active or camel.is_transitioning or not Global.player.is_active:
 		return
@@ -177,32 +282,24 @@ func _check_return_to_camel() -> void:
 		_left_camel_after_water = true
 	elif _left_camel_after_water:
 		_oasis_dialogue_played = true
-		Global.in_cutscene = true
 		get_node("Dialouge manger").call("oasis")
-
-func _on_p4_first_woman_text_finished() -> void:
-	if _active_painting == 4:
-		_painting_sprites[4].call("play_animation")
 
 func _on_painting_finished(conversation: String) -> void:
 	if conversation == "Oasis":
-		Global.in_cutscene = false
+		_oasis_dialogue_finished = true
+		_update_waypoint_position()
 		return
 	if not conversation.begins_with("P") or _active_painting == 0:
 		return
 	var id := _active_painting
 	_active_painting = 0
 	_painting_seen[id] = true
+	_next_painting = id + 1
 	_glow_painting(_painting_sprites[id])
-	if id == 4:
-		await get_tree().create_timer(5.0).timeout
-		var final_scene := load("res://finalCutscene.tscn").instantiate() as Node3D
-		add_child(final_scene)
-		final_scene.global_position = Vector3(-296.28, 3.897, 430.637)
-		(final_scene.get_node("Camera3D") as Camera3D).make_current()
-		(final_scene.get_node("AnimationPlayer") as AnimationPlayer).play("cutscene")
-	elif _painting_seen.has(1) and _painting_seen.has(2) and _painting_seen.has(3) and not _coverup_revealed:
+	_update_waypoint_position()
+	if _painting_seen.has(1) and _painting_seen.has(2) and _painting_seen.has(3) and not _coverup_revealed:
 		_coverup_revealed = true
+		Global.in_cutscene = true
 		await _sink_coverup()
 	else:
 		Global.in_cutscene = false

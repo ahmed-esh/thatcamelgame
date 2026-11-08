@@ -15,36 +15,48 @@ extends CharacterBody3D
 @export var rotation_speed : float = 12
 
 @export_group("Sliding")
-## Slope angle (degrees) above which the camel starts sliding.
+
 @export var slide_angle_threshold : float = 35.0
-## How strongly gravity pulls the camel down the slope while sliding.
+
 @export var slide_acceleration : float = 25.0
-## Maximum speed that can be reached from sliding alone.
+
 @export var max_slide_speed : float = 20.0
-## How fast slide momentum bleeds off once NOT on a steep slope (units/sec^2).
-## Keep this low so momentum carries over onto flat ground.
+
+
 @export var slide_momentum_decay : float = 3.0
-## Gravity is multiplied by this while sliding, which keeps the camel pressed to the slope.
+
 @export var slide_gravity_multiplier : float = 4.0
-## Floor snap distance while sliding. Larger = hugs bumps and dips in the terrain better.
+
 @export var slide_snap_length : float = 1.0
-## Pushing uphill on a steep slope cancels the slide. This is how far "uphill" the input must point
-## (0 = any uphill component, 1 = straight up the slope). Sideways input still slides.
+
+
 @export_range(0.0, 1.0, 0.01) var uphill_input_threshold : float = 0.2
-## How fast existing slide momentum is cancelled while pushing uphill (units/sec^2).
+
 @export var uphill_slide_cancel_decay : float = 40.0
-## If true, movement input is ignored while sliding or carrying slide momentum (camera look still works).
+
 @export var lock_input_while_sliding : bool = true
+
+@export_group("Sprint")
+@export var sprint_speed: float = 20.0
+@export var sprint_top_speed: float = 25.0
+@export var sprint_acceleration_time: float = 1.6
+@export var sprint_top_speed_delay: float = 1.2
+@export var sprint_top_speed_time: float = 1.1
+@export var sprint_camera_delay: float = 1.7
+@export var sprint_camera_time: float = 2.8
+@export var sprint_fov_increase: float = 11.0
+@export var sprint_camera_back: float = 3.0
+@export var sprint_camera_up: float = 1.0
 
 @export_group("Follow")
 @export var follow_start_distance: float = 10.0
 @export var follow_stop_distance: float = 4.0
 
 @export_group("Visuals")
-## How quickly the camel's visuals lerp to match the ground normal (higher = snappier).
+
 @export var ground_align_speed : float = 8.0
-## The visuals only re-align when the ground normal differs from the last normal they aligned to
-## by more than this many degrees. Raise it to ignore bumps; lower it to follow finer detail.
+
+
 @export_range(0.0, 45.0, 0.1) var ground_align_threshold : float = 8.0
 
 @onready var animation_tree: AnimationTree = $AnimationTree
@@ -52,6 +64,7 @@ extends CharacterBody3D
 @onready var hoof_skeleton: Skeleton3D = $VisualContainer/camel_man/Camel_Rig/Skeleton3D
 
 @onready var _camera_pivot = $SpringAnchor
+@onready var _spring_arm: SpringArm3D = $SpringAnchor/SpringArm3D
 @onready var camera_target: Node3D = $SpringAnchor/SpringArm3D/CameraTarget
 
 @onready var mount_left_start: Node3D = $VisualContainer/camel_man/mount_left_start
@@ -62,9 +75,9 @@ extends CharacterBody3D
 const SLIDE_STATE := &"camel_man_slide_added_camel_slide"
 const RIDE_IDLE_STATE := &"ride_idle"
 
-## Slide must be active this long (seconds) before the slide animation starts.
+
 @export var slide_anim_start_delay : float = 0.12
-## Slide must be inactive this long before returning to ride_idle.
+
 @export var slide_anim_end_grace : float = 0.15
 
 var _slide_on_time : float = 0.0
@@ -82,22 +95,35 @@ var is_transitioning : bool = false
 var is_accelerating : bool = false
 var current_turn_speed : float
 
-var _slide_velocity : Vector3 = Vector3.ZERO  # horizontal momentum from sliding
+var _slide_velocity : Vector3 = Vector3.ZERO
 var _is_sliding : bool = false
 var _pushing_uphill : bool = false
 var _default_snap_length : float
 var _following_player := false
 var _visual_yaw : float = 0.0
-var _visual_up : Vector3 = Vector3.UP        # what the model is currently using as "up" (smoothed)
-var _aligned_normal : Vector3 = Vector3.UP   # last ground normal the visuals committed to
+var _visual_up : Vector3 = Vector3.UP
+var _aligned_normal : Vector3 = Vector3.UP
 var hoof_distance := 0.0
 var hoof_index := 0
 const HOOF_BONES := ["front_L_foot", "rear_R_foot", "front_R_foot", "rear_L_foot"]
+var _normal_speed: float
+var _normal_spring_length: float
+var _normal_camera_pivot_position: Vector3
+var _normal_camera_fov: float
+var _normal_fov_captured := false
+var _sprinting := false
+var _sprint_time := 0.0
+var _sprint_camera_started := false
+var _sprint_speed_tween: Tween
+var _sprint_camera_tween: Tween
 
 
 func _ready() -> void:
 	floor_max_angle = deg_to_rad(65.0)
 	_default_snap_length = floor_snap_length
+	_normal_speed = max_speed
+	_normal_spring_length = _spring_arm.spring_length
+	_normal_camera_pivot_position = _camera_pivot.position
 	_visual_yaw = visuals.global_rotation.y
 	animation_tree.advance_expression_base_node = self.get_path()
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -111,30 +137,31 @@ func _unhandled_input(event: InputEvent) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		return
 
-	# Click to capture the mouse again.
+
 	if event is InputEventMouseButton and event.pressed \
 			and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		return
-	
+
 	if (not is_active): return
-	
+
 	if (event.is_action_pressed("Mount")):
-		# Can't dismount while sliding down a slope.
+		if Global.dialogue_active:
+			return
+
 		if _is_sliding:
 			return
 		GET_OFF_CAMEL()
 		return
-	
-	# Mouselook implemented using `screen_relative` for resolution-independent sensitivity.
+
+
 	if event is InputEventMouseMotion:
 		_camera_pivot.rotation.x -= event.screen_relative.y * mouse_sensitivity
-		# Prevent the camera from rotating too far up or down.
+
 		_camera_pivot.rotation.x = deg_to_rad(clamp(rad_to_deg(_camera_pivot.rotation.x), -tilt_limit, tilt_limit))
 		_camera_pivot.rotation.y += -event.screen_relative.x * mouse_sensitivity
 
 
-## Returns true if the floor we're standing on is steep enough to slide on.
 func _is_on_steep_slope() -> bool:
 	if not is_on_floor():
 		return false
@@ -142,23 +169,18 @@ func _is_on_steep_slope() -> bool:
 	return floor_angle >= slide_angle_threshold
 
 
-## Horizontal direction of steepest descent on the current floor.
 func _get_downhill() -> Vector3:
 	var downhill := Vector3.DOWN.slide(get_floor_normal())
 	downhill.y = 0
 	return downhill.normalized()
 
-## True if we're on a steep slope and the player is steering up it. Slides only apply to downhill
-## or sideways movement, so walking up a steep hill is allowed.
+
 func _is_pushing_uphill(move_dir: Vector3) -> bool:
 	if move_dir.length() < 0.1 or not _is_on_steep_slope():
 		return false
 	return move_dir.normalized().dot(_get_downhill()) < -uphill_input_threshold
 
 
-## True while sliding, or while still carrying meaningful slide momentum.
-## Used to keep the camel glued to the ground instead of bouncing off slope changes.
-## Never true while the player is pushing uphill, so climbing isn't fought by gravity/snap/lock.
 func _is_slide_active() -> bool:
 	if _pushing_uphill:
 		return false
@@ -178,24 +200,74 @@ func _update_slide_animation(delta: float) -> void:
 			_slide_anim_playing = false
 			state_machine.travel(RIDE_IDLE_STATE)
 
+func _update_sprint(delta: float) -> void:
+	var moving := Input.get_vector("Left", "Right", "Up", "Down").length() > 0.1
+	var requested := is_active and not is_transitioning and not Global.in_cutscene and moving and Input.is_action_pressed("run") and not _is_slide_active()
+	if not requested:
+		_stop_sprint()
+		return
+	if not _sprinting:
+		_sprinting = true
+		_sprint_time = 0.0
+		_sprint_camera_started = false
+		if _sprint_speed_tween != null:
+			_sprint_speed_tween.kill()
+		_sprint_speed_tween = create_tween()
+		_sprint_speed_tween.tween_property(self, "max_speed", sprint_speed, sprint_acceleration_time).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		_sprint_speed_tween.tween_interval(sprint_top_speed_delay)
+		_sprint_speed_tween.tween_property(self, "max_speed", sprint_top_speed, sprint_top_speed_time).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_sprint_time += delta
+	if _sprint_camera_started or _sprint_time < sprint_camera_delay or Global.main_camera == null:
+		return
+	_sprint_camera_started = true
+	if not _normal_fov_captured:
+		_normal_camera_fov = Global.main_camera.fov
+		_normal_fov_captured = true
+	if _sprint_camera_tween != null:
+		_sprint_camera_tween.kill()
+	_sprint_camera_tween = create_tween().set_parallel(true)
+	_sprint_camera_tween.tween_property(_spring_arm, "spring_length", _normal_spring_length + sprint_camera_back, sprint_camera_time).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_sprint_camera_tween.tween_property(_camera_pivot, "position", _normal_camera_pivot_position + Vector3.UP * sprint_camera_up, sprint_camera_time).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_sprint_camera_tween.tween_property(Global.main_camera, "fov", _normal_camera_fov + sprint_fov_increase, sprint_camera_time).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+func _stop_sprint() -> void:
+	if not _sprinting:
+		return
+	_sprinting = false
+	_sprint_time = 0.0
+	if _sprint_speed_tween != null:
+		_sprint_speed_tween.kill()
+	_sprint_speed_tween = create_tween()
+	_sprint_speed_tween.tween_property(self, "max_speed", _normal_speed, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	if not _sprint_camera_started:
+		return
+	_sprint_camera_started = false
+	if _sprint_camera_tween != null:
+		_sprint_camera_tween.kill()
+	_sprint_camera_tween = create_tween().set_parallel(true)
+	_sprint_camera_tween.tween_property(_spring_arm, "spring_length", _normal_spring_length, 0.85).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_sprint_camera_tween.tween_property(_camera_pivot, "position", _normal_camera_pivot_position, 0.85).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	if Global.main_camera != null:
+		_sprint_camera_tween.tween_property(Global.main_camera, "fov", _normal_camera_fov, 0.85).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
 func _update_slide(delta: float) -> void:
-	# Only slide when on a steep slope AND not pushing uphill.
+
 	_is_sliding = _is_on_steep_slope() and not _pushing_uphill
 
 	if _is_sliding:
 		var n := get_floor_normal()
 		var downhill := _get_downhill()
 
-		# Steeper slopes accelerate faster.
+
 		var steepness := sin(n.angle_to(Vector3.UP))
 		_slide_velocity += downhill * slide_acceleration * steepness * delta
 		_slide_velocity = _slide_velocity.limit_length(max_slide_speed)
 	elif _pushing_uphill:
-		# Player is climbing: quickly drop any leftover downhill momentum.
+
 		_slide_velocity = _slide_velocity.move_toward(Vector3.ZERO, uphill_slide_cancel_decay * delta)
 	elif is_on_floor():
-		# Off the steep slope but on the ground: slowly bleed off momentum.
-		# (Airborne = no friction, so momentum is preserved in the air.)
+
+
 		_slide_velocity = _slide_velocity.move_toward(Vector3.ZERO, slide_momentum_decay * delta)
 
 
@@ -213,6 +285,8 @@ func _physics_process(delta: float) -> void:
 			_following_player = false
 	else:
 		_following_player = false
+
+	_update_sprint(delta)
 
 	if not is_active and not _following_player and _slide_velocity.length() < 0.2 and Vector2(velocity.x, velocity.z).length() < 0.2:
 		return
@@ -316,72 +390,72 @@ func _update_hoofprints(delta: float) -> void:
 	point.y = ground
 	terrain.stamp(point, horizontal.normalized(), 0.34, 0.42, 0.135 if speed < 7.0 else 0.05)
 
-## Handles facing direction (yaw) and tilting the model to the ground normal while sliding.
+
 func _update_visuals(delta: float) -> void:
-	# While sliding / carrying slide momentum, face the direction of travel.
-	# Writing it into _prev_dir means the camel keeps that facing after the slide ends.
+
+
 	if _is_slide_active():
 		var slide_dir := Vector3(_slide_velocity.x, 0.0, _slide_velocity.z)
 		if slide_dir.length() > 0.5:
 			_prev_dir = slide_dir.normalized()
 
-	# Yaw: face the movement direction.
+
 	var target_yaw := Vector3.BACK.signed_angle_to(_prev_dir, Vector3.UP)
 	_visual_yaw = lerp_angle(_visual_yaw, target_yaw, rotation_speed * delta)
 
-	# Tilt: only commit to a new ground normal once it differs enough from the last committed one.
-	# In the air, keep whatever we last committed to.
+
 	if is_on_floor():
 		var ground_up := get_floor_normal().normalized()
 		if rad_to_deg(_aligned_normal.angle_to(ground_up)) > ground_align_threshold:
 			_aligned_normal = ground_up
 
-	# Smoothly move toward the committed normal.
-	# Lerp + normalize (instead of Vector3.slerp) so drift can never produce a non-unit vector.
+
 	var new_up := _visual_up.lerp(_aligned_normal, clampf(ground_align_speed * delta, 0.0, 1.0))
 	if new_up.length_squared() > 0.0001:
 		_visual_up = new_up.normalized()
 
-	# Build the final rotation: yaw around world up first, then tilt so up -> _visual_up.
+
 	var yaw_q := Quaternion(Vector3.UP, _visual_yaw)
 	var tilt_q := Quaternion(Vector3.UP, _visual_up)
 	var final_basis := Basis(tilt_q * yaw_q).scaled(visuals.global_basis.get_scale())
 	visuals.global_basis = final_basis
 
 func GET_ON_CAMEL() -> void:
+	if Global.dialogue_active:
+		return
 	Global.player.is_active = false
 	Global.player.animation_tree.active = false
 	is_transitioning = true
 	Global.player.visible = false
-	
-	
+
+
 	animation_tree.animation_finished.connect(on_mount)
 	if (abs((mount_left_start.global_position - Global.player.global_position).length()) >= abs((mount_right_start.global_position - Global.player.global_position).length())) :
 		state_machine.start("mount_right")
 	else:
 		state_machine.start("mount_left")
-		
+
 	Global.main_camera.lerp_to_new(Global.camel_camera_node)
-	# this finishes states based on the animation's callback
 
 
 func GET_OFF_CAMEL() -> void:
-	# the only way to determine whether we are on or off the camel. 
+	if Global.dialogue_active:
+		return
+	_stop_sprint()
+
 	is_active = false
 	is_transitioning = true
-	
+
 	Global.player.global_position = leave_position.global_position
 	Global.player.global_basis = leave_position.global_basis
-	#Global.player.global_position.y += Global.player.man.global_position.y + 0.3
-	#var offset : Vector3 = Vector3(0,0,0.3)
-	
-	#Global.player.global_position += offset
+
+
 	snap_player_to_ground_up()
-	# wait until the state is moved.
+
 	animation_tree.animation_finished.connect(on_dismount)
 	state_machine.start("dismount")
-	# move the player to the dismount position
-	
+
+
 	await Global.main_camera.lerp_to_new(Global.player_camera_node)
 
 func on_dismount(anim_name):
@@ -389,7 +463,7 @@ func on_dismount(anim_name):
 		return
 	Global.player.animation_tree.active = true
 	$VisualContainer/camel_man/man_root.visible = false
-	#Global.player.visuals.global_rotation = -mount_left_start.global_rotation
+
 	Global.player.visible = true
 	Global.player.is_active = true
 	is_transitioning = false
@@ -400,15 +474,13 @@ func on_dismount(anim_name):
 func on_mount(anim_name):
 	if (anim_name != &"mount_right" and anim_name != &"mount_left"):
 		return
-	
+
 	is_transitioning = false
 	is_active = true
 	Global.is_camel = true
 	animation_tree.animation_finished.disconnect(on_mount)
 
 
-
-## Casts upward from below the player and puts them on the first surface found.
 func snap_player_to_ground_up(start_below: float = 1.0, max_up: float = 5.0) -> void:
 	var player: Person = Global.player
 	var space := get_world_3d().direct_space_state
@@ -419,12 +491,12 @@ func snap_player_to_ground_up(start_below: float = 1.0, max_up: float = 5.0) -> 
 	var query := PhysicsRayQueryParameters3D.create(from, to)
 	query.exclude = [player.get_rid(), get_rid()]
 	query.collide_with_areas = false
-	query.hit_back_faces = true     # default, but explicit: needed when starting inside terrain
-	query.hit_from_inside = true    # needed if the ground is a solid convex shape (box, etc.)
+	query.hit_back_faces = true
+	query.hit_from_inside = true
 
 	var hit := space.intersect_ray(query)
 	if hit.is_empty():
-		return   # nothing above, so the player is probably not buried
+		return
 
 	player.global_position.y = hit.position.y + _player_half_height()
 

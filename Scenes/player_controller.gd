@@ -7,7 +7,7 @@ extends CharacterBody3D
 @export var is_active : bool:
 	set(value):
 		if value and not is_active:
-			_target_yaw = visuals.global_rotation.y   # pick up wherever the model is now
+			_target_yaw = visuals.global_rotation.y
 		is_active = value
 
 @export var rotation_speed : float
@@ -74,8 +74,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		var radians = _camera_pivot.rotation.x
 		_camera_pivot.rotation.x = deg_to_rad(clamp(rad_to_deg(radians), -tilt_limit_higher, tilt_limit_lower))
 		_camera_pivot.rotation.y += -event.screen_relative.x * mouse_sensitivity
-	
-	if Global.in_cutscene: return
+
+	if Global.in_cutscene or Global.dialogue_active: return
 	if event.is_action_pressed("Mount"):
 		if (!Global.got_water and Global.can_get_water):
 			_get_water_event()

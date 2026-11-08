@@ -1,7 +1,6 @@
 extends Node3D
 
 signal conversation_finished(conversation: String)
-signal p4_first_woman_text_finished
 
 @export var debug_mode := true
 @export var man_offset := Vector3(2.5, 3.0, 0.0)
@@ -70,6 +69,7 @@ func _start(conversation: String) -> void:
 		return
 	_reset()
 	_current_conversation = conversation
+	Global.dialogue_active = true
 	for graphic: Sprite3D in [$man, $women]:
 		for label: Label3D in graphic.get_node(conversation).get_children():
 			_lines.append(label)
@@ -104,15 +104,10 @@ func _begin_typing() -> void:
 	var text: String = _texts[_label]
 	_tween = create_tween()
 	_tween.tween_method(_reveal_text, 0, text.length(), text.length() / 35.0)
-	_tween.tween_callback(_finish_typing)
+	_tween.tween_callback(func(): _typing = false)
 
 func _reveal_text(count: int) -> void:
 	_label.text = String(_texts[_label]).left(count)
-
-func _finish_typing() -> void:
-	_typing = false
-	if _current_conversation == "P4" and _label == get_node("women/P4/1"):
-		p4_first_woman_text_finished.emit()
 
 func _advance() -> void:
 	if _transitioning or _label == null:
@@ -120,7 +115,7 @@ func _advance() -> void:
 	if _typing:
 		_tween.kill()
 		_label.text = _texts[_label]
-		_finish_typing()
+		_typing = false
 		return
 	_transitioning = true
 	_tween = create_tween()
@@ -138,6 +133,7 @@ func _finish_line() -> void:
 		var finished := _current_conversation
 		_reset()
 		_current_conversation = ""
+		Global.dialogue_active = false
 		conversation_finished.emit(finished)
 	else:
 		_show_line()
@@ -151,20 +147,6 @@ func _input(event: InputEvent) -> void:
 	elif _label != null and event.keycode in [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER]:
 		get_viewport().set_input_as_handled()
 		_advance()
-#
-#func _process(_delta: float) -> void:
-	#var mounted := Global.camel != null and (Global.camel.is_active or Global.camel.is_transitioning)
-	#var target: Node3D = Global.camel if mounted else Global.player
-	#var camera := get_viewport().get_camera_3d()
-	#if target == null or camera == null:
-		#return
-	#global_position = target.global_position
-	#global_basis = camera.global_basis.orthonormalized().scaled(_world_scale)
-	#for graphic: Sprite3D in [$man, $women]:
-		#var offset := man_offset if graphic == $man else women_offset
-		#if mounted:
-			#offset.y += mounted_height
-		#graphic.global_position = target.global_position + camera.global_basis.orthonormalized() * offset
 
 
 func _process(_delta: float) -> void:
@@ -180,13 +162,13 @@ func _process(_delta: float) -> void:
 	global_position = target.global_position
 	global_basis = camera_basis.scaled(_world_scale)
 
-	# Man follows the player or camel
+
 	var man_pos := man_offset
 	if mounted:
 		man_pos.y += mounted_height
 
 	$man.global_position = target.global_position + camera_basis * man_pos
 
-	# Woman follows her assigned anchor node
+
 	var woman_target: Node3D = women_anchor if women_anchor != null else target
 	$women.global_position = woman_target.global_position + camera_basis * women_offset
