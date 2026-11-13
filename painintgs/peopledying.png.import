@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c4lkswc4yljco"
 path.s3tc="res://.godot/imported/peopledying.png-530ab4ef196c92de61040b6376c2a76b.s3tc.ctex"
+path.etc2="res://.godot/imported/peopledying.png-530ab4ef196c92de61040b6376c2a76b.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://painintgs/peopledying.png"
-dest_files=["res://.godot/imported/peopledying.png-530ab4ef196c92de61040b6376c2a76b.s3tc.ctex"]
+dest_files=["res://.godot/imported/peopledying.png-530ab4ef196c92de61040b6376c2a76b.s3tc.ctex", "res://.godot/imported/peopledying.png-530ab4ef196c92de61040b6376c2a76b.etc2.ctex"]
 
 [params]
 

@@ -22,7 +22,6 @@ var _water_interaction: Area3D
 var _interaction_audio: AudioStreamPlayer3D
 var _oasis_dialogue_played := false
 var _oasis_dialogue_finished := false
-var _left_camel_after_water := false
 var _next_painting := 1
 var _dismount_area: Area3D
 var _waypoint: Node3D
@@ -123,7 +122,7 @@ func _setup_paintings_and_water() -> void:
 		8.0,
 		water_bounds.size.z * absf(water_mesh.scale.z)
 	)
-	box.size = oasis_size * 0.64
+	box.size = oasis_size
 	shape_node.position = water_mesh.transform * water_bounds.get_center()
 	shape_node.rotation = water_mesh.rotation
 	shape_node.shape = box
@@ -166,7 +165,7 @@ func _setup_waypoint() -> void:
 	_waypoint_star.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	_waypoint_star.shaded = false
 	_waypoint_star.fixed_size = true
-	_waypoint_star.no_depth_test = true
+	_waypoint_star.no_depth_test = false
 	_waypoint_star.modulate = Color(0.76, 0.9, 1.0, 0.0)
 	_waypoint.add_child(_waypoint_star)
 	var bob := create_tween().set_loops()
@@ -181,8 +180,9 @@ func _update_waypoint_position() -> void:
 	if _waypoint == null:
 		return
 	var target: Node3D = null
-	if Global.game_started and not Global.in_cutscene:
-		target = oasis
+	if Global.game_started and not Global.in_cutscene and not Global.dialogue_active and _active_painting == 0:
+		if not Global.got_water:
+			target = oasis.get_node("DreamingWater")
 		if _oasis_dialogue_finished:
 			target = _painting_sprites.get(_next_painting) as Node3D
 	if target == _waypoint_target:
@@ -224,6 +224,10 @@ func _update_interaction_prompt() -> void:
 			mode = "dismount"
 		elif Global.player.is_active and Global.can_get_water and not Global.got_water:
 			mode = "water"
+		elif Global.player.is_active and Global.got_water and not _oasis_dialogue_played:
+			mode = "return_to_camel"
+		elif Global.player.is_active and not Global.got_water and _camel_hint_finished and _dismount_area.overlaps_body(Global.player):
+			mode = "oasis_center"
 		elif Global.player.is_active and not _camel_hint_finished and Global.player.area_3d.overlaps_body(camel):
 			mode = "camel"
 	if mode == _prompt_mode:
@@ -233,6 +237,10 @@ func _update_interaction_prompt() -> void:
 		_water_interaction.call("show_prompt", "Press E to get water")
 	elif mode == "dismount":
 		_water_interaction.call("show_prompt", "Press E to get off the camel")
+	elif mode == "return_to_camel":
+		_water_interaction.call("show_prompt", "Go to the camel")
+	elif mode == "oasis_center":
+		_water_interaction.call("show_prompt", "Go to the middle of the oasis\nto get some water")
 	elif mode == "camel":
 		_water_interaction.call("show_prompt", "Press E to get on the camel")
 	else:
@@ -260,9 +268,7 @@ func _check_return_to_camel() -> void:
 	if camel.is_active or camel.is_transitioning or not Global.player.is_active:
 		return
 	var near_camel := Global.player.area_3d.overlaps_body(camel)
-	if not near_camel:
-		_left_camel_after_water = true
-	elif _left_camel_after_water:
+	if near_camel:
 		_oasis_dialogue_played = true
 		get_node("Dialouge manger").call("oasis")
 
@@ -295,6 +301,13 @@ func _on_painting_finished(conversation: String) -> void:
 		var final_scene := load("res://finalCutscene.tscn").instantiate() as Node3D
 		add_child(final_scene)
 		final_scene.global_position = Vector3(-296.28, 3.897, 430.637)
+		var ending_oasis := final_scene.get_node("the oasis/Oasis") as Node3D
+		for palm in ending_oasis.get_children():
+			if not str(palm.name).begins_with("Palm_") and palm.name != "waddan_rigged":
+				continue
+			var ground_position: Vector3 = palm.global_position
+			ground_position.y = terrain.base_height(ground_position.x, ground_position.z) + 0.032850266 - 0.04
+			palm.global_position = ground_position
 		(final_scene.get_node("Camera3D") as Camera3D).make_current()
 		(final_scene.get_node("AnimationPlayer") as AnimationPlayer).play("cutscene")
 	elif _painting_seen.has(1) and _painting_seen.has(2) and _painting_seen.has(3) and not _coverup_revealed:

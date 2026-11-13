@@ -108,15 +108,24 @@ func is_water_contact(world_point: Vector3) -> bool:
 	if absf(p.x) > 55.0 or absf(p.z) > 40.0:
 		return false
 
+	var colors: PackedColorArray = water_mesh.mesh.surface_get_arrays(0)[Mesh.ARRAY_COLOR]
+	var x := clampf(p.x + 55.0, 0.0, 109.9999)
+	var z := clampf(p.z + 40.0, 0.0, 79.9999)
+	var i := int(z) * 111 + int(x)
+	var u := x - int(x)
+	var v := z - int(z)
+	var depth := colors[i].r + (colors[i + 1].r - colors[i].r) * u + (colors[i + 111].r - colors[i].r) * v if u + v < 1.0 else colors[i + 112].r + (colors[i + 111].r - colors[i + 112].r) * (1.0 - u) + (colors[i + 1].r - colors[i + 112].r) * (1.0 - v)
+	if depth < 0.005:
+		return false
+
 	# Allow feet/hooves to be submerged but not several meters above water.
-	var level := get_water_level()
+	var level := water_mesh.to_global(Vector3(p.x, 0.0, p.z)).y
 	if world_point.y > level + 0.25 or world_point.y < level - 3.0:
 		return false
 
-	# Match the same terrain-height mask used to create vertex colors.
 	if terrain != null and terrain.has_method("base_height"):
-		var ground: float = float(terrain.call("base_height", p.x, p.z + terrain_z_offset))
-		if ground >= -0.03:
+		var ground: float = float(terrain.call("base_height", world_point.x, world_point.z))
+		if ground >= level - 0.03:
 			return false
 
 	return true

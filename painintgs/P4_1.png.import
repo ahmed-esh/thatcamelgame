@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://d2uj6dyt8ff30"
 path.s3tc="res://.godot/imported/P4_1.png-894bf4302bb7f1239ad01416146170ac.s3tc.ctex"
+path.etc2="res://.godot/imported/P4_1.png-894bf4302bb7f1239ad01416146170ac.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://painintgs/P4_1.png"
-dest_files=["res://.godot/imported/P4_1.png-894bf4302bb7f1239ad01416146170ac.s3tc.ctex"]
+dest_files=["res://.godot/imported/P4_1.png-894bf4302bb7f1239ad01416146170ac.s3tc.ctex", "res://.godot/imported/P4_1.png-894bf4302bb7f1239ad01416146170ac.etc2.ctex"]
 
 [params]
 

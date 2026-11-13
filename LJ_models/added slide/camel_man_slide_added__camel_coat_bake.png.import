@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://d2u5mmqcdwiy"
 path.s3tc="res://.godot/imported/camel_man_slide_added__camel_coat_bake.png-4f85913620d15f02c2e35a866236f6b4.s3tc.ctex"
+path.etc2="res://.godot/imported/camel_man_slide_added__camel_coat_bake.png-4f85913620d15f02c2e35a866236f6b4.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={
@@ -15,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://LJ_models/added slide/camel_man_slide_added__camel_coat_bake.png"
-dest_files=["res://.godot/imported/camel_man_slide_added__camel_coat_bake.png-4f85913620d15f02c2e35a866236f6b4.s3tc.ctex"]
+dest_files=["res://.godot/imported/camel_man_slide_added__camel_coat_bake.png-4f85913620d15f02c2e35a866236f6b4.s3tc.ctex", "res://.godot/imported/camel_man_slide_added__camel_coat_bake.png-4f85913620d15f02c2e35a866236f6b4.etc2.ctex"]
 
 [params]
 

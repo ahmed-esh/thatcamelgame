@@ -18,6 +18,8 @@ func set_prompt(label: Label3D) -> void:
 
 func _physics_process(_delta: float) -> void:
 	var eligible := Global.player != null and Global.game_started and not Global.is_camel and not Global.got_water and not _consumed and overlaps_body(Global.player)
+	if eligible and get_parent().has_method("is_water_contact"):
+		eligible = get_parent().is_water_contact(Global.player.global_position)
 	if eligible == _inside:
 		return
 	_inside = eligible
